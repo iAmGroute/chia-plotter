@@ -110,7 +110,6 @@ phase4::output_t create_plot(    const int num_threads,
             + "-" + bls::Util::HexStr(params.id.data(), params.id.size());
 
     std::cout << "Working Directory:   " << (tmp_dir.empty() ? "$PWD" : tmp_dir) << std::endl;
-    std::cout << "Working Directory 2: " << (tmp_dir_2.empty() ? "$PWD" : tmp_dir_2) << std::endl;
     std::cout << "Plot Name: " << plot_name << std::endl;
 
     // memo = bytes(pool_public_key) + bytes(farmer_public_key) + bytes(local_master_sk)
@@ -123,16 +122,16 @@ phase4::output_t create_plot(    const int num_threads,
     params.plot_name = plot_name;
 
     phase1::output_t out_1;
-    phase1::compute(params, out_1, num_threads, log_num_buckets, plot_name, tmp_dir, tmp_dir_2);
+    phase1::compute(params, out_1, num_threads, log_num_buckets, plot_name, tmp_dir);
 
     phase2::output_t out_2;
-    phase2::compute(out_1, out_2, num_threads, log_num_buckets, plot_name, tmp_dir, tmp_dir_2);
+    phase2::compute(out_1, out_2, num_threads, log_num_buckets, plot_name, tmp_dir);
 
     phase3::output_t out_3;
-    phase3::compute(out_2, out_3, num_threads, log_num_buckets, plot_name, tmp_dir, tmp_dir_2);
+    phase3::compute(out_2, out_3, num_threads, log_num_buckets, plot_name, tmp_dir);
 
     phase4::output_t out_4;
-    phase4::compute(out_3, out_4, num_threads, log_num_buckets, plot_name, tmp_dir, tmp_dir_2);
+    phase4::compute(out_3, out_4, num_threads, log_num_buckets, plot_name, tmp_dir);
 
     const auto time_secs = (get_wall_time_micros() - total_begin) / 1e6;
     std::cout << "Total plot creation time was "
