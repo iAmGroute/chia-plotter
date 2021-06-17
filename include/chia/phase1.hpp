@@ -255,24 +255,32 @@ void compute_f1(const uint8_t* id, int num_threads, DS* T1_sort)
 
     typedef typename DS::WriteCache WriteCache;
 
-    ThreadPool<std::vector<entry_1>, size_t, std::shared_ptr<WriteCache>> output(
-        [T1_sort](std::vector<entry_1>& input, size_t&, std::shared_ptr<WriteCache>& cache) {
+    ThreadPool<std::vector<entry_1>, size_t, std::shared_ptr<WriteCache>>
+    output (
+        [T1_sort](std::vector<entry_1>& input, size_t&, std::shared_ptr<WriteCache>& cache)
+        {
             if(!cache) {
                 cache = T1_sort->add_cache();
             }
             for(auto& entry : input) {
                 cache->add(entry);
             }
-        }, nullptr, std::max(num_threads / 2, 1), "phase1/add");
+        },
+        nullptr, std::max(num_threads / 2, 1), "phase1/add"
+    );
 
-    ThreadPool<uint64_t, std::vector<entry_1>> pool(
-        [id](uint64_t& block, std::vector<entry_1>& out, size_t&) {
+    ThreadPool<uint64_t, std::vector<entry_1>>
+    pool (
+        [id](uint64_t& block, std::vector<entry_1>& out, size_t&)
+        {
             out.resize(M * 16);
             F1Calculator F1(id);
             for(size_t i = 0; i < M; ++i) {
                 F1.compute_block(block * M + i, &out[i * 16]);
             }
-        }, &output, num_threads, "phase1/F1");
+        },
+        &output, num_threads, "phase1/F1"
+    );
 
     for(uint64_t k = 0; k < (uint64_t(1) << 28) / M; ++k) {
         pool.take_copy(k);
@@ -411,21 +419,29 @@ uint64_t compute_table(    int R_index, int num_threads,
                         DS_L* L_sort, DS_R* R_sort,
                         DiskTable<R>* L_tmp, DiskTable<S>* R_tmp = nullptr)
 {
-    Thread<std::vector<T>> L_write(
-        [L_tmp](std::vector<T>& input) {
+    Thread<std::vector<T>>
+    L_write (
+        [L_tmp](std::vector<T>& input)
+        {
             for(const auto& entry : input) {
                 R tmp;
                 tmp.assign(entry);
                 L_tmp->write(tmp);
             }
-        }, "phase1/write/L");
+        },
+        "phase1/write/L"
+    );
 
-    Thread<std::vector<S>> R_write(
-        [R_tmp](std::vector<S>& input) {
+    Thread<std::vector<S>>
+    R_write (
+        [R_tmp](std::vector<S>& input)
+        {
             for(const auto& entry : input) {
                 R_tmp->write(entry);
             }
-        }, "phase1/write/R");
+        },
+        "phase1/write/R"
+    );
 
     const auto begin = get_wall_time_micros();
     const auto num_matches =
