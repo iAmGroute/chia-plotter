@@ -52,14 +52,14 @@ static void interrupt_handler(int sig) {
     }
 }
 
-inline
-phase4::output_t create_plot(    const int num_threads,
-                                const int log_num_buckets,
-                                const vector<uint8_t>& pool_key_bytes,
-                                const vector<uint8_t>& farmer_key_bytes,
-                                const std::string& tmp_dir,
-                                const std::string& tmp_dir_2)
-{
+inline phase4::output_t create_plot(
+    const int              num_threads,
+    const int              log_num_buckets,
+    const vector<uint8_t>& pool_key_bytes,
+    const vector<uint8_t>& farmer_key_bytes,
+    const std::string&     tmp_dir,
+    const std::string&     tmp_dir_2
+) {
     const auto total_begin = get_wall_time_micros();
 
     std::cout << "Process ID: " << GETPID() << std::endl;

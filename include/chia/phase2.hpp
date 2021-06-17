@@ -122,13 +122,15 @@ void compute_table(    int R_index, int num_threads,
                 << " (" << 100 * (1 - double(num_written) / R_table.num_entries) << " %)" << std::endl;
 }
 
-inline
-void compute(    const phase1::output_t& input, output_t& out,
-                const int num_threads, const int log_num_buckets,
-                const std::string plot_name,
-                const std::string tmp_dir,
-                const std::string tmp_dir_2)
-{
+inline void compute(
+    const phase1::output_t& input,
+                  output_t& out,
+    const int               num_threads,
+    const int               log_num_buckets,
+    const std::string       plot_name,
+    const std::string       tmp_dir,
+    const std::string       tmp_dir_2
+) {
     const auto total_begin = get_wall_time_micros();
 
     const std::string prefix = tmp_dir + plot_name + ".p2.";

@@ -241,13 +241,15 @@ uint64_t compute(    FILE* plot_file, const int header_size,
     return end_byte;
 }
 
-inline
-void compute(    const phase3::output_t& input, output_t& out,
-                const int num_threads, const int log_num_buckets,
-                const std::string plot_name,
-                const std::string tmp_dir,
-                const std::string tmp_dir_2)
-{
+inline void compute(
+    const phase3::output_t& input,
+                  output_t& out,
+    const int               num_threads,
+    const int               log_num_buckets,
+    const std::string       plot_name,
+    const std::string       tmp_dir,
+    const std::string       tmp_dir_2
+) {
     const auto total_begin = get_wall_time_micros();
 
     FILE* plot_file = fopen(input.plot_file_name.c_str(), "rb+");

@@ -464,13 +464,15 @@ uint64_t compute_table(    int R_index, int num_threads,
     return num_matches;
 }
 
-inline
-void compute(    const input_t& input, output_t& out,
-                const int num_threads, const int log_num_buckets,
-                const std::string plot_name,
-                const std::string tmp_dir,
-                const std::string tmp_dir_2)
-{
+inline void compute(
+    const input_t&    input,
+          output_t&   out,
+    const int         num_threads,
+    const int         log_num_buckets,
+    const std::string plot_name,
+    const std::string tmp_dir,
+    const std::string tmp_dir_2
+) {
     const auto total_begin = get_wall_time_micros();
 
     initialize();
