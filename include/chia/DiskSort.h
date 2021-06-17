@@ -48,7 +48,7 @@ public:
     };
 
     DiskSort(    int key_size, int log_num_buckets,
-                std::string file_prefix, bool read_only = false);
+                std::string path, std::string prefix, bool read_only = false);
 
     ~DiskSort() {
         close();

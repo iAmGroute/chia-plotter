@@ -92,7 +92,7 @@ void DiskSort<T, Key>::WriteCache::flush()
 
 template<typename T, typename Key>
 DiskSort<T, Key>::DiskSort(    int key_size, int log_num_buckets,
-                            std::string file_prefix, bool read_only)
+                            std::string path, std::string prefix, bool read_only)
     :    key_size(key_size),
         log_num_buckets(log_num_buckets),
         bucket_key_shift(key_size - log_num_buckets),
@@ -102,7 +102,7 @@ DiskSort<T, Key>::DiskSort(    int key_size, int log_num_buckets,
 {
     for(size_t i = 0; i < buckets.size(); ++i) {
         auto& bucket = buckets[i];
-        bucket.file_name = file_prefix + ".sort_bucket_" + std::to_string(i) + ".tmp";
+        bucket.file_name = path + std::to_string(i) + "/" + prefix + std::to_string(i) + ".tmp";
         if(read_only) {
             bucket.num_entries = get_file_size(bucket.file_name.c_str()) / T::disk_size;
         } else {
