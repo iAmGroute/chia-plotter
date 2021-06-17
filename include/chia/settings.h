@@ -11,18 +11,7 @@
 #include <cstdint>
 #include <cstddef>
 
-
-/*
- * Number of table entries to read at once.
- * default = 65536
- */
-extern size_t g_read_chunk_size;
-
-/*
- * Number of table entries to buffer before writing to disk.
- * default = 4096
- */
-extern size_t g_write_chunk_size;
-
+constexpr size_t  g_read_chunk_size = 65536; // Number of table entries to read at once
+constexpr size_t g_write_chunk_size = 32768; // Number of table entries to buffer before writing to disk
 
 #endif /* INCLUDE_CHIA_SETTINGS_H_ */
