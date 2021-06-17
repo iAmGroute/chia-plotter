@@ -52,13 +52,13 @@ public:
         while(do_run && is_avail) {
             signal.wait(lock);
         }
-        if(!do_run) {
+        if (!do_run) {
             return;
         }
         is_avail = true;
         input = std::move(data);
 
-        if(is_busy) {
+        if (is_busy) {
             // wait for thread to take new input (no triple buffering)
             while(do_run && is_avail && is_busy) {
                 signal.notify_all();
@@ -77,7 +77,7 @@ public:
         while(do_run && (is_avail || is_busy)) {
             signal.wait(lock);
         }
-        if(is_fail) {
+        if (is_fail) {
             throw std::runtime_error("thread failed with: " + ex_what);
         }
     }
@@ -87,7 +87,7 @@ public:
         wait();
         std::unique_lock<std::mutex> lock(mutex);
         do_run = false;
-        if(thread.joinable()) {
+        if (thread.joinable()) {
             lock.unlock();
             signal.notify_all();
             thread.join();
@@ -97,10 +97,10 @@ public:
 private:
     void loop(const std::string& name) noexcept
     {
-        if(!name.empty()) {
+        if (!name.empty()) {
             std::string thread_name = name;
             // limit the name to 15 chars, otherwise pthread_setname_np() fails
-            if(thread_name.size() > 15) {
+            if (thread_name.size() > 15) {
                 thread_name.resize(15);
             }
 #ifdef _GNU_SOURCE
@@ -113,7 +113,7 @@ private:
                 signal.notify_all();    // notify about is_busy change
                 signal.wait(lock);
             }
-            if(!do_run) {
+            if (!do_run) {
                 break;
             }
             T tmp = std::move(input);

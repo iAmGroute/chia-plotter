@@ -394,13 +394,13 @@ std::vector<uint8_t> hex_to_bytes(const std::string& hex)
 inline
 std::string get_date_string_ex(const char* format, bool UTC = false, int64_t time_secs = -1) {
     ::time_t time_;
-    if(time_secs < 0) {
+    if (time_secs < 0) {
         ::time(&time_);
     } else {
         time_ = time_secs;
     }
     ::tm* tmp;
-    if(UTC) {
+    if (UTC) {
         tmp = ::gmtime(&time_);
     } else {
         tmp = ::localtime(&time_);
@@ -419,14 +419,14 @@ std::ifstream::pos_type get_file_size(const char* file_name)
 
 inline
 void fseek_set(FILE* file, uint64_t offset) {
-    if(fseek(file, offset, SEEK_SET)) {
+    if (fseek(file, offset, SEEK_SET)) {
         throw std::runtime_error("fseek() failed");
     }
 }
 
 inline
 size_t fwrite_ex(FILE* file, const void* buf, size_t length) {
-    if(fwrite(buf, 1, length, file) != length) {
+    if (fwrite(buf, 1, length, file) != length) {
         throw std::runtime_error("fwrite() failed");
     }
     return length;

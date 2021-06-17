@@ -17,7 +17,7 @@ std::array<FILE*, 7> file;
 void gather_x(int depth, uint64_t pos, uint16_t off, std::vector<uint32_t>& out)
 {
     FILE* f = file[depth];
-    if(depth == 0) {
+    if (depth == 0) {
         tmp_entry_1 entry = {};
         fseek_set(f, pos * tmp_entry_1::disk_size);
         read_entry(f, entry);
@@ -64,11 +64,11 @@ int main()
     {
         const std::string file_name = "test.p1.table" + std::to_string(i + 1) + ".tmp";
         size_t size = 0;
-        if(i == 0) {
+        if (i == 0) {
             size = phase1::tmp_entry_1::disk_size;
-        } else if(i < 6) {
+        } else if (i < 6) {
             size = phase1::tmp_entry_x::disk_size;
-        } else if(i == 6) {
+        } else if (i == 6) {
             size = phase1::entry_7::disk_size;
         }
         table[i].file_name = file_name;

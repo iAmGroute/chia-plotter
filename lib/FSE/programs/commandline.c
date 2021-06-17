@@ -144,7 +144,7 @@ int main(int argc, const char** argv)
     for(i = 1; i <= argc; i++) {
         const char* argument = argv[i];
 
-        if(!argument) continue;   /* Protection if argument empty */
+        if (!argument) continue;   /* Protection if argument empty */
 
         // Decode command (note : aggregated commands are allowed)
         if (argument[0]=='-') {
@@ -258,7 +258,7 @@ int main(int argc, const char** argv)
     }
 
     /* No input filename ==> use stdin */
-    if(!input_filename) { input_filename=stdinmark; }
+    if (!input_filename) { input_filename=stdinmark; }
 
     /* Check if input is defined as console; trigger an error in this case */
     if (!strcmp(input_filename, stdinmark) && IS_CONSOLE(stdin) ) badusage(programName);

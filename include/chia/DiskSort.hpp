@@ -19,11 +19,11 @@
 template<typename T, typename Key>
 void DiskSort<T, Key>::bucket_t::open(const char* mode)
 {
-    if(file) {
+    if (file) {
         fclose(file);
     }
     file = fopen(file_name.c_str(), mode);
-    if(!file) {
+    if (!file) {
         throw std::runtime_error("fopen() failed");
     }
 }
@@ -32,8 +32,8 @@ template<typename T, typename Key>
 void DiskSort<T, Key>::bucket_t::write(const void* data, size_t count)
 {
     std::lock_guard<std::mutex> lock(mutex);
-    if(file) {
-        if(fwrite(data, T::disk_size, count, file) != count) {
+    if (file) {
+        if (fwrite(data, T::disk_size, count, file) != count) {
             throw std::runtime_error("fwrite() failed");
         }
         num_entries += count;
@@ -43,7 +43,7 @@ void DiskSort<T, Key>::bucket_t::write(const void* data, size_t count)
 template<typename T, typename Key>
 void DiskSort<T, Key>::bucket_t::close()
 {
-    if(file) {
+    if (file) {
         fclose(file);
         file = nullptr;
     }
@@ -66,11 +66,11 @@ template<typename T, typename Key>
 void DiskSort<T, Key>::WriteCache::add(const T& entry)
 {
     const size_t index = Key{}(entry) >> key_shift;
-    if(index >= buckets.size()) {
+    if (index >= buckets.size()) {
         throw std::logic_error("bucket index out of range");
     }
     auto& buffer = buckets[index];
-    if(buffer.count >= buffer.capacity) {
+    if (buffer.count >= buffer.capacity) {
         disk->write(index, buffer.data, buffer.count);
         buffer.count = 0;
     }
@@ -83,7 +83,7 @@ void DiskSort<T, Key>::WriteCache::flush()
 {
     for(size_t index = 0; index < buckets.size(); ++index) {
         auto& buffer = buckets[index];
-        if(buffer.count) {
+        if (buffer.count) {
             disk->write(index, buffer.data, buffer.count);
             buffer.count = 0;
         }
@@ -103,7 +103,7 @@ DiskSort<T, Key>::DiskSort(    int key_size, int log_num_buckets,
     for(size_t i = 0; i < buckets.size(); ++i) {
         auto& bucket = buckets[i];
         bucket.file_name = path + std::to_string(i) + "/" + prefix + std::to_string(i) + ".tmp";
-        if(read_only) {
+        if (read_only) {
             bucket.num_entries = get_file_size(bucket.file_name.c_str()) / T::disk_size;
         } else {
             bucket.open("wb");
@@ -114,10 +114,10 @@ DiskSort<T, Key>::DiskSort(    int key_size, int log_num_buckets,
 template<typename T, typename Key>
 void DiskSort<T, Key>::write(size_t index, const void* data, size_t count)
 {
-    if(is_finished) {
+    if (is_finished) {
         throw std::logic_error("read only");
     }
-    if(index >= buckets.size()) {
+    if (index >= buckets.size()) {
         throw std::logic_error("bucket index out of range");
     }
     buckets[index].write(data, count);
@@ -133,7 +133,7 @@ template<typename T, typename Key>
 void DiskSort<T, Key>::read(Processor<std::pair<std::vector<T>, size_t>>* output,
                             int num_threads, int num_threads_read)
 {
-    if(num_threads_read < 0) {
+    if (num_threads_read < 0) {
         num_threads_read = std::max(num_threads / 2, 2);
     }
 
@@ -180,7 +180,7 @@ void DiskSort<T, Key>::read_bucket(    std::pair<size_t, size_t>& index,
     bucket.open("rb");
 
     const int key_shift = bucket_key_shift - log_num_buckets;
-    if(key_shift < 0) {
+    if (key_shift < 0) {
         throw std::logic_error("key_shift < 0");
     }
     std::unordered_map<size_t, std::vector<T>> table;
@@ -189,7 +189,7 @@ void DiskSort<T, Key>::read_bucket(    std::pair<size_t, size_t>& index,
     for(size_t i = 0; i < bucket.num_entries;)
     {
         const size_t num_entries = std::min(buffer.capacity, bucket.num_entries - i);
-        if(fread(buffer.data, T::disk_size, num_entries, bucket.file) != num_entries) {
+        if (fread(buffer.data, T::disk_size, num_entries, bucket.file) != num_entries) {
             throw std::runtime_error("fread() failed");
         }
         for(size_t k = 0; k < num_entries; ++k) {
@@ -197,14 +197,14 @@ void DiskSort<T, Key>::read_bucket(    std::pair<size_t, size_t>& index,
             entry.read(buffer.entry_at(k));
 
             auto& block = table[Key{}(entry) >> key_shift];
-            if(block.empty()) {
+            if (block.empty()) {
                 block.reserve((bucket.num_entries >> log_num_buckets) * 1.1);
             }
             block.push_back(entry);
         }
         i += num_entries;
     }
-    if(!keep_files) {
+    if (!keep_files) {
         bucket.remove();
     }
 
@@ -237,7 +237,7 @@ void DiskSort<T, Key>::close()
 {
     for(auto& bucket : buckets) {
         bucket.close();
-        if(!keep_files) {
+        if (!keep_files) {
             bucket.remove();
         }
     }

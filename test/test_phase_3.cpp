@@ -37,7 +37,7 @@ int main(int argc, char** argv)
     bitfield bitfield_1(table_1.num_entries);
     {
         FILE* file = fopen("test.p2.bitfield1.tmp", "rb");
-        if(!file) {
+        if (!file) {
             throw std::runtime_error("bitfield1 missing");
         }
         bitfield_1.read(file);
@@ -45,7 +45,7 @@ int main(int argc, char** argv)
     }
 
     FILE* plot_file = fopen("test.plot.tmp", "wb");
-    if(!plot_file) {
+    if (!plot_file) {
         throw std::runtime_error("fopen() failed");
     }
     const uint32_t header_size = WriteHeader(plot_file, 32, id, nullptr, 0);

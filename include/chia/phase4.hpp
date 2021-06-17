@@ -126,7 +126,7 @@ uint64_t compute(    FILE* plot_file, const int header_size,
             const size_t num_bytes =
                     Encoding::ANSEncodeDeltas(park.deltas, kC3R, tmp.buffer.data() + 2);
 
-            if(num_bytes + 2 > C3_size) {
+            if (num_bytes + 2 > C3_size) {
                 throw std::logic_error("C3 overflow");
             }
             Util::IntToTwoBytes(tmp.buffer.data(), num_bytes);    // Write the size
@@ -146,7 +146,7 @@ uint64_t compute(    FILE* plot_file, const int header_size,
         for(const auto& entry : input.first) {
             const uint64_t entry_y = entry.key;
 
-            if(index % kEntriesPerPark == 0 && index > 0)
+            if (index % kEntriesPerPark == 0 && index > 0)
             {
                 park_data.offset = final_file_writer_3;
                 final_file_writer_3 += P7_park_size;
@@ -158,7 +158,7 @@ uint64_t compute(    FILE* plot_file, const int header_size,
             }
             park_data.array.push_back(entry.pos);
 
-            if(index % kCheckpoint1Interval == 0)
+            if (index % kCheckpoint1Interval == 0)
             {
                 write_data_t out;
                 out.offset = final_file_writer_1;
@@ -170,11 +170,11 @@ uint64_t compute(    FILE* plot_file, const int header_size,
                     out_.emplace_back(std::move(out));
                     plot_write.take(out_);
                 }
-                if(num_C1_entries > 0) {
+                if (num_C1_entries > 0) {
                     park_deltas.offset = begin_byte_C3 + (num_C1_entries - 1) * C3_size;
                     park_threads.take(park_deltas);
                 }
-                if(index % (kCheckpoint1Interval * kCheckpoint2Interval) == 0) {
+                if (index % (kCheckpoint1Interval * kCheckpoint2Interval) == 0) {
                     C2.push_back(entry_y);
                 }
                 park_deltas.deltas.clear();
@@ -200,7 +200,7 @@ uint64_t compute(    FILE* plot_file, const int header_size,
     }
     final_file_writer_3 += P7_park_size;
 
-    if(!park_deltas.deltas.empty()) {
+    if (!park_deltas.deltas.empty()) {
         park_deltas.offset = begin_byte_C3 + (num_C1_entries - 1) * C3_size;
         park_threads.take(park_deltas);
     }
@@ -251,7 +251,7 @@ void compute(    const phase3::output_t& input, output_t& out,
     const auto total_begin = get_wall_time_micros();
 
     FILE* plot_file = fopen(input.plot_file_name.c_str(), "rb+");
-    if(!plot_file) {
+    if (!plot_file) {
         throw std::runtime_error("fopen() failed");
     }
 

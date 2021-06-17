@@ -31,7 +31,7 @@ public:
         :    output(output),
             execute(func)
     {
-        if(num_threads < 1) {
+        if (num_threads < 1) {
             throw std::logic_error("num_threads < 1");
         }
         for(int i = 0; i < num_threads; ++i) {
@@ -114,7 +114,7 @@ private:
                 prev->signal.wait(lock);
             }
         }
-        if(output) {
+        if (output) {
             output->take(out);    // only one thread can be at this position
         }
         {

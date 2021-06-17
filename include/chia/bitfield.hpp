@@ -87,13 +87,13 @@ struct bitfield
     }
 
     void write(FILE* file) const {
-        if(fwrite(buffer_.get(), sizeof(uint64_t), size_, file) != size_t(size_)) {
+        if (fwrite(buffer_.get(), sizeof(uint64_t), size_, file) != size_t(size_)) {
             throw std::runtime_error("fwrite() failed");
         }
     }
 
     void read(FILE* file) {
-        if(fread(buffer_.get(), sizeof(uint64_t), size_, file) != size_t(size_)) {
+        if (fread(buffer_.get(), sizeof(uint64_t), size_, file) != size_t(size_)) {
             throw std::runtime_error("fread() failed");
         }
     }

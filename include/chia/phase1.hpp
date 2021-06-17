@@ -178,7 +178,7 @@ public:
         uint16_t* idx_L,
         uint16_t* idx_R)
     {
-        if(bucket_L.empty() || bucket_R.empty()) {
+        if (bucket_L.empty() || bucket_R.empty()) {
             return 0;
         }
         const uint16_t parity = (bucket_L[0].y / kBC) % 2;
@@ -226,7 +226,7 @@ public:
 
         for(int i = 0; i < count; ++i) {
             const auto pos = L_pos_begin + idx_L[i];
-            if(pos < (uint64_t(1) << 32)) {
+            if (pos < (uint64_t(1) << 32)) {
                 match_t<T> match;
                 match.left = bucket_L[idx_L[i]];
                 match.right = bucket_R[idx_R[i]];
@@ -259,7 +259,7 @@ void compute_f1(const uint8_t* id, int num_threads, DS* T1_sort)
     output (
         [T1_sort](std::vector<entry_1>& input, size_t&, std::shared_ptr<WriteCache>& cache)
         {
-            if(!cache) {
+            if (!cache) {
                 cache = T1_sort->add_cache();
             }
             for(auto& entry : input) {
@@ -314,7 +314,7 @@ uint64_t compute_matches(    int R_index, int num_threads,
 
     ThreadPool<std::vector<S>, size_t, std::shared_ptr<WriteCache>> R_add(
         [R_sort](std::vector<S>& input, size_t&, std::shared_ptr<WriteCache>& cache) {
-            if(!cache) {
+            if (!cache) {
                 cache = R_sort->add_cache();
             }
             for(auto& entry : input) {
@@ -323,7 +323,7 @@ uint64_t compute_matches(    int R_index, int num_threads,
         }, nullptr, std::max(num_threads / 2, 1), "phase1/add");
 
     Processor<std::vector<S>>* R_out = &R_add;
-    if(R_tmp_out) {
+    if (R_tmp_out) {
         R_out = R_tmp_out;
     }
 
@@ -357,11 +357,11 @@ uint64_t compute_matches(    int R_index, int num_threads,
             out.reserve(1024);
             for(const auto& entry : input.first) {
                 const uint64_t index = entry.y / kBC;
-                if(index < L_index[0]) {
+                if (index < L_index[0]) {
                     throw std::logic_error("input not sorted");
                 }
-                if(index > L_index[0]) {
-                    if(L_index[1] + 1 == L_index[0]) {
+                if (index > L_index[0]) {
+                    if (L_index[1] + 1 == L_index[0]) {
                         match_input_t pair;
                         pair.L_offset = L_offset;
                         pair.L_bucket = L_bucket;
@@ -370,21 +370,21 @@ uint64_t compute_matches(    int R_index, int num_threads,
                     L_index[1] = L_index[0];
                     L_index[0] = index;
                     L_offset[1] = L_offset[0];
-                    if(auto bucket = L_bucket[0]) {
+                    if (auto bucket = L_bucket[0]) {
                         L_offset[0] += bucket->size();
                         avg_bucket_size = avg_bucket_size * 0.99 + bucket->size() * 0.01;
                     }
                     L_bucket[1] = L_bucket[0];
                     L_bucket[0] = nullptr;
                 }
-                if(!L_bucket[0]) {
+                if (!L_bucket[0]) {
                     L_bucket[0] = std::make_shared<std::vector<T>>();
                     L_bucket[0]->reserve(avg_bucket_size * 1.2);
                 }
                 L_bucket[0]->push_back(entry);
             }
             match_pool.take(out);
-            if(L_tmp_out) {
+            if (L_tmp_out) {
                 L_tmp_out->take(input.first);
             }
         }, "phase1/slice");
@@ -394,7 +394,7 @@ uint64_t compute_matches(    int R_index, int num_threads,
     read_thread.close();
     match_pool.close();
 
-    if(L_index[1] + 1 == L_index[0]) {
+    if (L_index[1] + 1 == L_index[0]) {
         FxMatcher<T> Fx;
         std::vector<match_t<T>> matches;
         num_found += Fx.find_matches(L_offset[1], *L_bucket[1], *L_bucket[0], matches);
@@ -404,10 +404,10 @@ uint64_t compute_matches(    int R_index, int num_threads,
     eval_pool.close();
     R_add.close();
 
-    if(R_sort) {
+    if (R_sort) {
         R_sort->finish();
     }
-    if(num_written < num_found) {
+    if (num_written < num_found) {
         std::cout << "[P1] Lost " << num_found - num_written
                 << " matches due to 32-bit overflow." << std::endl;
     }
@@ -453,10 +453,10 @@ uint64_t compute_table(    int R_index, int num_threads,
     L_write.close();
     R_write.close();
 
-    if(L_tmp) {
+    if (L_tmp) {
         L_tmp->close();
     }
-    if(R_tmp) {
+    if (R_tmp) {
         R_tmp->close();
     }
     std::cout << "[P1] Table " << R_index << " took " << (get_wall_time_micros() - begin) / 1e6 << " sec"

@@ -177,71 +177,71 @@ int main(int argc, char** argv)
         "f, farmerkey", "Farmer Public Key (48 bytes)", cxxopts::value<std::string>(farmer_key_str))(
         "help", "Print help");
 
-    if(argc <= 1) {
+    if (argc <= 1) {
         std::cout << options.help({""}) << std::endl;
         return 0;
     }
     const auto args = options.parse(argc, argv);
 
-    if(args.count("help")) {
+    if (args.count("help")) {
         std::cout << options.help({""}) << std::endl;
         return 0;
     }
-    if(pool_key_str.empty()) {
+    if (pool_key_str.empty()) {
         std::cout << "Pool Public Key (48 bytes) needs to be specified via -p <hex>, see `chia keys show`." << std::endl;
         return -2;
     }
-    if(farmer_key_str.empty()) {
+    if (farmer_key_str.empty()) {
         std::cout << "Farmer Public Key (48 bytes) needs to be specified via -f <hex>, see `chia keys show`." << std::endl;
         return -2;
     }
-    if(tmp_dir.empty()) {
+    if (tmp_dir.empty()) {
         std::cout << "tmpdir needs to be specified via -t path/" << std::endl;
         return -2;
     }
-    if(tmp_dir2.empty()) {
+    if (tmp_dir2.empty()) {
         tmp_dir2 = tmp_dir;
     }
-    if(final_dir.empty()) {
+    if (final_dir.empty()) {
         final_dir = tmp_dir;
     }
     const auto pool_key = hex_to_bytes(pool_key_str);
     const auto farmer_key = hex_to_bytes(farmer_key_str);
     const int log_num_buckets = num_buckets >= 16 ? int(log2(num_buckets)) : num_buckets;
 
-    if(pool_key.size() != bls::G1Element::SIZE) {
+    if (pool_key.size() != bls::G1Element::SIZE) {
         std::cout << "Invalid poolkey: " << bls::Util::HexStr(pool_key) << ", '" << pool_key_str
             << "' (needs to be " << bls::G1Element::SIZE << " bytes, see `chia keys show`)" << std::endl;
         return -2;
     }
-    if(farmer_key.size() != bls::G1Element::SIZE) {
+    if (farmer_key.size() != bls::G1Element::SIZE) {
         std::cout << "Invalid farmerkey: " << bls::Util::HexStr(farmer_key) << ", '" << farmer_key_str
             << "' (needs to be " << bls::G1Element::SIZE << " bytes, see `chia keys show`)" << std::endl;
         return -2;
     }
-    if(!tmp_dir.empty() && tmp_dir.find_last_of("/\\") != tmp_dir.size() - 1) {
+    if (!tmp_dir.empty() && tmp_dir.find_last_of("/\\") != tmp_dir.size() - 1) {
         std::cout << "Invalid tmpdir: " << tmp_dir << " (needs trailing '/' or '\\')" << std::endl;
         return -2;
     }
-    if(!tmp_dir2.empty() && tmp_dir2.find_last_of("/\\") != tmp_dir2.size() - 1) {
+    if (!tmp_dir2.empty() && tmp_dir2.find_last_of("/\\") != tmp_dir2.size() - 1) {
         std::cout << "Invalid tmpdir2: " << tmp_dir2 << " (needs trailing '/' or '\\')" << std::endl;
         return -2;
     }
-    if(!final_dir.empty() && final_dir.find_last_of("/\\") != final_dir.size() - 1) {
+    if (!final_dir.empty() && final_dir.find_last_of("/\\") != final_dir.size() - 1) {
         std::cout << "Invalid finaldir: " << final_dir << " (needs trailing '/' or '\\')" << std::endl;
         return -2;
     }
-    if(num_threads < 1 || num_threads > 1024) {
+    if (num_threads < 1 || num_threads > 1024) {
         std::cout << "Invalid threads parameter: " << num_threads << " (supported: [1..1024])" << std::endl;
         return -2;
     }
-    if(log_num_buckets < 4 || log_num_buckets > 16) {
+    if (log_num_buckets < 4 || log_num_buckets > 16) {
         std::cout << "Invalid buckets parameter: 2^" << log_num_buckets << " (supported: 2^[4..16])" << std::endl;
         return -2;
     }
     {
         const std::string path = tmp_dir + ".chia_plot_tmp";
-        if(auto file = fopen(path.c_str(), "wb")) {
+        if (auto file = fopen(path.c_str(), "wb")) {
             fclose(file);
             remove(path.c_str());
         } else {
@@ -251,7 +251,7 @@ int main(int argc, char** argv)
     }
     {
         const std::string path = tmp_dir2 + ".chia_plot_tmp2";
-        if(auto file = fopen(path.c_str(), "wb")) {
+        if (auto file = fopen(path.c_str(), "wb")) {
             fclose(file);
             remove(path.c_str());
         } else {
@@ -261,7 +261,7 @@ int main(int argc, char** argv)
     }
     {
         const std::string path = final_dir + ".chia_plot_final";
-        if(auto file = fopen(path.c_str(), "wb")) {
+        if (auto file = fopen(path.c_str(), "wb")) {
             fclose(file);
             remove(path.c_str());
         } else {
@@ -277,7 +277,7 @@ int main(int argc, char** argv)
         ::rlimit the_limit;
         the_limit.rlim_cur = num_files_max + 10;
         the_limit.rlim_max = num_files_max + 10;
-        if(setrlimit(RLIMIT_NOFILE, &the_limit)) {
+        if (setrlimit(RLIMIT_NOFILE, &the_limit)) {
             std::cout << "Warning: setrlimit() failed!" << std::endl;
         }
     }
@@ -288,7 +288,7 @@ int main(int argc, char** argv)
         std::vector<std::pair<FILE*, std::string>> files;
         for(int i = 0; i < num_files_max; ++i) {
             const std::string path = tmp_dir + ".chia_plot_tmp." + std::to_string(i);
-            if(auto file = fopen(path.c_str(), "wb")) {
+            if (auto file = fopen(path.c_str(), "wb")) {
                 files.emplace_back(file, path);
             } else {
                 std::cout << "Cannot open at least " << num_files_max
@@ -302,7 +302,7 @@ int main(int argc, char** argv)
         }
     }
 
-    if(num_plots > 1 || num_plots < 0) {
+    if (num_plots > 1 || num_plots < 0) {
         std::signal(SIGINT, interrupt_handler);
         std::signal(SIGTERM, interrupt_handler);
     }
@@ -313,7 +313,7 @@ int main(int argc, char** argv)
     #endif
     std::cout << std::endl;
     std::cout << "Final Directory: " << final_dir << std::endl;
-    if(num_plots >= 0) {
+    if (num_plots >= 0) {
         std::cout << "Number of Plots: " << num_plots << std::endl;
     } else {
         std::cout << "Number of Plots: infinite" << std::endl;
@@ -346,7 +346,7 @@ int main(int argc, char** argv)
         std::cout << "Crafting plot " << i+1 << " out of " << num_plots << std::endl;
         const auto out = create_plot(num_threads, log_num_buckets, pool_key, farmer_key, tmp_dir, tmp_dir2);
 
-        if(final_dir != tmp_dir)
+        if (final_dir != tmp_dir)
         {
             const auto dst_path = final_dir + out.params.plot_name + ".plot";
             std::cout << "Started copy to " << dst_path << std::endl;

@@ -34,7 +34,7 @@ void compute_table(    int R_index, int num_threads,
             [L_used, R_used](std::pair<std::vector<T>, size_t>& input, size_t&, size_t&) {
                 uint64_t offset = 0;
                 for(const auto& entry : input.first) {
-                    if(R_used && !R_used->get(input.second + (offset++))) {
+                    if (R_used && !R_used->get(input.second + (offset++))) {
                         continue;    // drop it
                     }
                     L_used->set(entry.pos);
@@ -65,7 +65,7 @@ void compute_table(    int R_index, int num_threads,
 
     ThreadPool<std::vector<S>, size_t, std::shared_ptr<WriteCache>> R_add(
         [R_sort](std::vector<S>& input, size_t&, std::shared_ptr<WriteCache>& cache) {
-            if(!cache) {
+            if (!cache) {
                 cache = R_sort->add_cache();
             }
             for(auto& entry : input) {
@@ -74,7 +74,7 @@ void compute_table(    int R_index, int num_threads,
         }, nullptr, std::max(num_threads / 2, 1), "phase2/add");
 
     Processor<std::vector<S>>* R_out = &R_add;
-    if(R_file) {
+    if (R_file) {
         R_out = &R_write;
     }
 
@@ -91,7 +91,7 @@ void compute_table(    int R_index, int num_threads,
             out.reserve(input.first.size());
             uint64_t offset = 0;
             for(const auto& entry : input.first) {
-                if(R_used && !R_used->get(input.second + (offset++))) {
+                if (R_used && !R_used->get(input.second + (offset++))) {
                     continue;    // drop it
                 }
                 S tmp;
@@ -110,10 +110,10 @@ void compute_table(    int R_index, int num_threads,
     R_write.close();
     R_add.close();
 
-    if(R_sort) {
+    if (R_sort) {
         R_sort->finish();
     }
-    if(R_file) {
+    if (R_file) {
         R_file->flush();
     }
     std::cout << "[P2] Table " << R_index << " rewrite took "

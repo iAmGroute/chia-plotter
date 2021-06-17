@@ -309,7 +309,7 @@ public:
             for (uint8_t i = 0; i < kExtraBitsPow; i++) {
                 uint16_t r_target = L_targets[parity][r][i];
                 for (size_t j = 0; j < rmap[r_target].count; j++) {
-                    if(idx_L != nullptr) {
+                    if (idx_L != nullptr) {
                         idx_L[idx_count]=pos_L;
                         idx_R[idx_count]=rmap[r_target].pos + j;
                     }
