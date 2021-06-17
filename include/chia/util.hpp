@@ -377,71 +377,71 @@ namespace Util {
 
 inline
 int64_t get_wall_time_micros() {
-	return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 }
 
 inline
 std::vector<uint8_t> hex_to_bytes(const std::string& hex)
 {
-	std::vector<uint8_t> result;
-	for(size_t i = 0; i < hex.length(); i += 2) {
-		const std::string byteString = hex.substr(i, 2);
-		result.push_back(::strtol(byteString.c_str(), NULL, 16));
-	}
-	return result;
+    std::vector<uint8_t> result;
+    for(size_t i = 0; i < hex.length(); i += 2) {
+        const std::string byteString = hex.substr(i, 2);
+        result.push_back(::strtol(byteString.c_str(), NULL, 16));
+    }
+    return result;
 }
 
 inline
 std::string get_date_string_ex(const char* format, bool UTC = false, int64_t time_secs = -1) {
-	::time_t time_;
-	if(time_secs < 0) {
-		::time(&time_);
-	} else {
-		time_ = time_secs;
-	}
-	::tm* tmp;
-	if(UTC) {
-		tmp = ::gmtime(&time_);
-	} else {
-		tmp = ::localtime(&time_);
-	}
-	char buf[256];
-	::strftime(buf, sizeof(buf), format, tmp);
-	return std::string(buf);
+    ::time_t time_;
+    if(time_secs < 0) {
+        ::time(&time_);
+    } else {
+        time_ = time_secs;
+    }
+    ::tm* tmp;
+    if(UTC) {
+        tmp = ::gmtime(&time_);
+    } else {
+        tmp = ::localtime(&time_);
+    }
+    char buf[256];
+    ::strftime(buf, sizeof(buf), format, tmp);
+    return std::string(buf);
 }
 
 inline
 std::ifstream::pos_type get_file_size(const char* file_name)
 {
-	std::ifstream in(file_name, std::ifstream::ate | std::ifstream::binary);
-	return in.tellg(); 
+    std::ifstream in(file_name, std::ifstream::ate | std::ifstream::binary);
+    return in.tellg(); 
 }
 
 inline
 void fseek_set(FILE* file, uint64_t offset) {
-	if(fseek(file, offset, SEEK_SET)) {
-		throw std::runtime_error("fseek() failed");
-	}
+    if(fseek(file, offset, SEEK_SET)) {
+        throw std::runtime_error("fseek() failed");
+    }
 }
 
 inline
 size_t fwrite_ex(FILE* file, const void* buf, size_t length) {
-	if(fwrite(buf, 1, length, file) != length) {
-		throw std::runtime_error("fwrite() failed");
-	}
-	return length;
+    if(fwrite(buf, 1, length, file) != length) {
+        throw std::runtime_error("fwrite() failed");
+    }
+    return length;
 }
 
 inline
 size_t fwrite_at(FILE* file, uint64_t offset, const void* buf, size_t length) {
-	fseek_set(file, offset);
-	fwrite_ex(file, buf, length);
-	return length;
+    fseek_set(file, offset);
+    fwrite_ex(file, buf, length);
+    return length;
 }
 
 inline
 void remove(const std::string& file_name) {
-	std::remove(file_name.c_str());
+    std::remove(file_name.c_str());
 }
 
 #endif  // SRC_CPP_UTIL_HPP_

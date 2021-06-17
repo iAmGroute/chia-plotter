@@ -14,19 +14,19 @@
 
 template<typename T>
 bool write_entry(FILE* file, const T& entry) {
-	uint8_t buf[T::disk_size];
-	entry.write(buf);
-	return fwrite(buf, 1, T::disk_size, file) == T::disk_size;
+    uint8_t buf[T::disk_size];
+    entry.write(buf);
+    return fwrite(buf, 1, T::disk_size, file) == T::disk_size;
 }
 
 template<typename T>
 bool read_entry(FILE* file, T& entry) {
-	uint8_t buf[T::disk_size];
-	if(fread(buf, 1, T::disk_size, file) != T::disk_size) {
-		return false;
-	}
-	entry.read(buf);
-	return true;
+    uint8_t buf[T::disk_size];
+    if(fread(buf, 1, T::disk_size, file) != T::disk_size) {
+        return false;
+    }
+    entry.read(buf);
+    return true;
 }
 
 

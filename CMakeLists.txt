@@ -2,10 +2,10 @@ cmake_minimum_required(VERSION 3.10)
 set(CMAKE_CXX_STANDARD 17)
 find_package(Git)
 execute_process(
-  COMMAND ${GIT_EXECUTABLE} log -1 --format=%h
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-  OUTPUT_VARIABLE GIT_COMMIT_HASH
-  OUTPUT_STRIP_TRAILING_WHITESPACE
+    COMMAND ${GIT_EXECUTABLE} log -1 --format=%h
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE GIT_COMMIT_HASH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 add_definitions("-DGIT_COMMIT_HASH=\"${GIT_COMMIT_HASH}\"")
 
@@ -29,12 +29,12 @@ set(BLAKE3_PATH lib/BLAKE3/c)
 set(FSE_PATH lib/FSE/lib)
 
 include_directories(
-	lib
-	include
-	lib/bls-signatures/src
-	${BLAKE3_PATH}
-	${CMAKE_BINARY_DIR}/_deps/relic-src/include
-	${CMAKE_BINARY_DIR}/_deps/relic-build/include
+    lib
+    include
+    lib/bls-signatures/src
+    ${BLAKE3_PATH}
+    ${CMAKE_BINARY_DIR}/_deps/relic-src/include
+    ${CMAKE_BINARY_DIR}/_deps/relic-build/include
 )
 
 IF (WIN32)
@@ -75,8 +75,8 @@ add_library(blake3 STATIC ${BLAKE3_SRC})
 add_library(fse STATIC ${FSE_SRC})
 
 add_library(chia_plotter STATIC
-	lib/chacha8.c
-	src/settings.cpp
+    lib/chacha8.c
+    src/settings.cpp
 )
 
 target_link_libraries(chia_plotter blake3 fse Threads::Threads)

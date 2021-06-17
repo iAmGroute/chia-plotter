@@ -73,8 +73,8 @@ static const std::string kFormatDescription = "v1.0";
 
 
 struct table_t {
-	std::string file_name;
-	size_t num_entries = 0;
+    std::string file_name;
+    size_t num_entries = 0;
 };
 
 
