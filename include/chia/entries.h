@@ -22,7 +22,7 @@ bool write_entry(FILE* file, const T& entry) {
 template<typename T>
 bool read_entry(FILE* file, T& entry) {
     uint8_t buf[T::disk_size];
-    if(fread(buf, 1, T::disk_size, file) != T::disk_size) {
+    if (fread(buf, 1, T::disk_size, file) != T::disk_size) {
         return false;
     }
     entry.read(buf);

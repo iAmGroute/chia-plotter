@@ -107,7 +107,7 @@ public:
                             << ", i=" << i << std::endl;
                     return LargeBits();
                 } else {
-                    if(f.FindMatches(bucket_L, bucket_R, nullptr, nullptr) != 1) {
+                    if (f.FindMatches(bucket_L, bucket_R, nullptr, nullptr) != 1) {
                         std::cerr << "FindMatches != 1" << std::endl;
                         return LargeBits();
                     }

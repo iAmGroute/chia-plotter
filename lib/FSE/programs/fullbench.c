@@ -1358,7 +1358,7 @@ int main(int argc, const char** argv)
     for(i=1; i<argc; i++) {
         const char* argument = argv[i];
 
-        if(!argument) continue;   // Protection if argument empty
+        if (!argument) continue;   // Protection if argument empty
         if (!strcmp(argument, "--no-prompt")) { no_prompt = 1; continue; }
 
         // Decode command (note : aggregated commands are allowed)

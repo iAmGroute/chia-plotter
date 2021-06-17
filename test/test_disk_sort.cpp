@@ -23,7 +23,7 @@ int main(int argc, char** argv)
 //    const size_t num_buckets = size_t(1) << log_num_buckets;
     const size_t num_threads = 4;
 
-    if(true) {
+    if (true) {
         std::cout << "sizeof(phase1::entry_1) = " << sizeof(phase1::entry_1) << std::endl;
 
         typedef DiskSort<phase1::entry_1, phase1::get_y<phase1::entry_1>> DiskSort1;
@@ -55,7 +55,7 @@ int main(int argc, char** argv)
         std::cout << "sort() took " << (get_wall_time_micros() - sort_begin) / 1000. << " ms" << std::endl;
     }
 
-    if(false) {
+    if (false) {
         std::cout << "sizeof(phase1::entry_4) = " << sizeof(phase1::entry_4) << std::endl;
 
         typedef DiskSort<phase1::entry_4, phase1::get_y<phase1::entry_4>> DiskSort4;
@@ -79,7 +79,7 @@ int main(int argc, char** argv)
             [out, &f_max](std::pair<std::vector<phase1::entry_4>, size_t>& input) {
                 for(const auto& entry : input.first) {
                     write_entry(out, entry);
-                    if(entry.y < f_max) {
+                    if (entry.y < f_max) {
                         throw std::logic_error("entry.f < f_max");
                     }
                     f_max = entry.y;

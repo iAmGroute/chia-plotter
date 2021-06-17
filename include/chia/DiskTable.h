@@ -21,7 +21,7 @@ private:
         FILE* file = nullptr;
         uint8_t* buffer = nullptr;
         ~local_t() {
-            if(file) {
+            if (file) {
                 fclose(file);
             }
             delete [] buffer;
@@ -33,7 +33,7 @@ public:
         :    file_name(file_name),
             num_entries(num_entries)
     {
-        if(!num_entries) {
+        if (!num_entries) {
             file_out = fopen(file_name.c_str(), "wb");
         }
     }
@@ -69,7 +69,7 @@ public:
         for(size_t i = 0; i < pool.num_threads(); ++i)
         {
             FILE* file = fopen(file_name.c_str(), "rb");
-            if(!file) {
+            if (!file) {
                 throw std::runtime_error("fopen() failed");
             }
             auto& local = pool.get_local(i);
@@ -84,7 +84,7 @@ public:
             pool.take_copy(std::make_pair(offset, block_size));
             offset += block_size;
         }
-        if(left_over) {
+        if (left_over) {
             pool.take_copy(std::make_pair(offset, left_over));
         }
         pool.close();
@@ -92,7 +92,7 @@ public:
 
     // NOT thread-safe
     void write(const T& entry) {
-        if(cache.count >= cache.capacity) {
+        if (cache.count >= cache.capacity) {
             flush();
         }
         entry.write(cache.entry_at(cache.count));
@@ -100,7 +100,7 @@ public:
     }
 
     void flush() {
-        if(fwrite(cache.data, cache.entry_size, cache.count, file_out) != cache.count) {
+        if (fwrite(cache.data, cache.entry_size, cache.count, file_out) != cache.count) {
             throw std::runtime_error("fwrite() failed");
         }
         num_entries += cache.count;
@@ -108,7 +108,7 @@ public:
     }
 
     void close() {
-        if(file_out) {
+        if (file_out) {
             flush();
             fclose(file_out);
             file_out = nullptr;
@@ -120,10 +120,10 @@ private:
                     std::pair<std::vector<T>, size_t>& out,
                     local_t& local) const
     {
-        if(int err = fseek(local.file, param.first * T::disk_size, SEEK_SET)) {
+        if (int err = fseek(local.file, param.first * T::disk_size, SEEK_SET)) {
             throw std::runtime_error("fseek() failed");
         }
-        if(fread(local.buffer, T::disk_size, param.second, local.file) != param.second) {
+        if (fread(local.buffer, T::disk_size, param.second, local.file) != param.second) {
             throw std::runtime_error("fread() failed");
         }
         auto& entries = out.first;

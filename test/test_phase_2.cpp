@@ -26,11 +26,11 @@ int main(int argc, char** argv)
     {
         const std::string file_name = "test.p1.table" + std::to_string(i + 1) + ".tmp";
         size_t size = 0;
-        if(i == 0) {
+        if (i == 0) {
             size = phase1::tmp_entry_1::disk_size;
-        } else if(i < 6) {
+        } else if (i < 6) {
             size = phase1::tmp_entry_x::disk_size;
-        } else if(i == 6) {
+        } else if (i == 6) {
             size = phase1::entry_7::disk_size;
         }
         input[i].file_name = file_name;
@@ -81,7 +81,7 @@ int main(int argc, char** argv)
     compute_table<phase1::tmp_entry_x, entry_x, DiskSortT>(
             2, num_threads, &sort_2, nullptr, input[1], &next_bitfield, &curr_bitfield);
 
-    if(FILE* file = fopen("test.p2.bitfield1.tmp", "wb")) {
+    if (FILE* file = fopen("test.p2.bitfield1.tmp", "wb")) {
         next_bitfield.write(file);
         fclose(file);
     }

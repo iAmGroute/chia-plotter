@@ -178,7 +178,7 @@ struct get_meta<entry_1> {
 template<typename T>
 struct set_meta {
     void operator()(T& entry, const uint8_t* bytes, const size_t num_bytes) {
-        if(num_bytes != sizeof(entry.meta)) {
+        if (num_bytes != sizeof(entry.meta)) {
             throw std::logic_error("meta data size mismatch");
         }
         memcpy(entry.meta.data(), bytes, sizeof(entry.meta));
