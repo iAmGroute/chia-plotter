@@ -17,7 +17,7 @@ struct byte_buffer_t {
     const size_t capacity;
     uint8_t* data = nullptr;
     static constexpr size_t entry_size = T::disk_size;
-    
+
     byte_buffer_t(const size_t capacity) : capacity(capacity) {
         data = new uint8_t[capacity * entry_size];
     }

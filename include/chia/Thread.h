@@ -24,9 +24,9 @@ template<typename T>
 class Processor {
 public:
     virtual ~Processor() {}
-    
+
     virtual void take(T& data) = 0;
-    
+
     void take_copy(const T& data) {
         T copy = data;
         take(copy);
@@ -41,11 +41,11 @@ public:
     {
         thread = std::thread(&Thread::loop, this, name);
     }
-    
+
     virtual ~Thread() {
         close();
     }
-    
+
     // thread-safe
     void take(T& data) override {
         std::unique_lock<std::mutex> lock(mutex);
@@ -57,7 +57,7 @@ public:
         }
         is_avail = true;
         input = std::move(data);
-        
+
         if(is_busy) {
             // wait for thread to take new input (no triple buffering)
             while(do_run && is_avail && is_busy) {
@@ -70,7 +70,7 @@ public:
             signal.notify_all();
         }
     }
-    
+
     // wait for thread to finish all pending input [thread-safe]
     void wait() {
         std::unique_lock<std::mutex> lock(mutex);
@@ -81,7 +81,7 @@ public:
             throw std::runtime_error("thread failed with: " + ex_what);
         }
     }
-    
+
     // NOT thread-safe
     void close() {
         wait();
@@ -93,7 +93,7 @@ public:
             thread.join();
         }
     }
-    
+
 private:
     void loop(const std::string& name) noexcept
     {
@@ -134,7 +134,7 @@ private:
         }
         signal.notify_all();        // notify about do_run + is_fail + is_busy change
     }
-    
+
 private:
     T input;
     bool do_run = true;
@@ -146,7 +146,7 @@ private:
     std::condition_variable signal;
     std::function<void(T&)> execute;
     std::string ex_what;
-    
+
 };
 
 

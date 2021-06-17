@@ -48,11 +48,11 @@ uint64_t compute(    FILE* plot_file, const int header_size,
                     const uint64_t final_entries_written)
 {
     static constexpr uint8_t k = 32;
-    
+
     const uint32_t P7_park_size = Util::ByteAlign((k + 1) * kEntriesPerPark) / 8;
     const uint64_t number_of_p7_parks =
         ((final_entries_written == 0 ? 0 : final_entries_written - 1) / kEntriesPerPark) + 1;
-    
+
     std::array<uint64_t, 12> final_table_begin_pointers = {};
     final_table_begin_pointers[7] = final_pointer_7;
 
@@ -76,33 +76,33 @@ uint64_t compute(    FILE* plot_file, const int header_size,
 
     uint64_t prev_y = 0;
     uint64_t num_C1_entries = 0;
-    
+
     std::vector<uint32_t> C2;
 
     std::cout << "[P4] Starting to write C1 and C3 tables" << std::endl;
-    
+
     struct park_deltas_t {
         uint64_t offset = 0;
         std::vector<uint8_t> deltas;
     } park_deltas;
-    
+
     struct park_data_t {
         uint64_t offset = 0;
         std::vector<uint32_t> array;    // new_pos
     } park_data;
-    
+
     struct write_data_t {
         uint64_t offset = 0;
         std::vector<uint8_t> buffer;
     };
-    
+
     Thread<std::vector<write_data_t>> plot_write(
         [plot_file](std::vector<write_data_t>& input) {
             for(const auto& write : input) {
                 fwrite_at(plot_file, write.offset, write.buffer.data(), write.buffer.size());
             }
         }, "phase4/write");
-    
+
     ThreadPool<std::vector<park_data_t>, std::vector<write_data_t>> p7_threads(
         [P7_park_size](std::vector<park_data_t>& input, std::vector<write_data_t>& out, size_t&) {
             for(const auto& park : input) {
@@ -117,7 +117,7 @@ uint64_t compute(    FILE* plot_file, const int header_size,
                 out.emplace_back(std::move(tmp));
             }
         }, &plot_write, std::max(num_threads / 2, 1), "phase4/P7");
-    
+
     ThreadPool<park_deltas_t, std::vector<write_data_t>> park_threads(
         [C3_size](park_deltas_t& park, std::vector<write_data_t>& out, size_t&) {
             write_data_t tmp;
@@ -125,7 +125,7 @@ uint64_t compute(    FILE* plot_file, const int header_size,
             tmp.buffer.resize(C3_size);
             const size_t num_bytes =
                     Encoding::ANSEncodeDeltas(park.deltas, kC3R, tmp.buffer.data() + 2);
-            
+
             if(num_bytes + 2 > C3_size) {
                 throw std::logic_error("C3 overflow");
             }
@@ -145,19 +145,19 @@ uint64_t compute(    FILE* plot_file, const int header_size,
         uint64_t index = input.second;
         for(const auto& entry : input.first) {
             const uint64_t entry_y = entry.key;
-    
+
             if(index % kEntriesPerPark == 0 && index > 0)
             {
                 park_data.offset = final_file_writer_3;
                 final_file_writer_3 += P7_park_size;
-                
+
                 parks.emplace_back(std::move(park_data));
-                
+
                 park_data.array.clear();
                 park_data.array.reserve(kEntriesPerPark);
             }
             park_data.array.push_back(entry.pos);
-    
+
             if(index % kCheckpoint1Interval == 0)
             {
                 write_data_t out;
@@ -189,10 +189,10 @@ uint64_t compute(    FILE* plot_file, const int header_size,
         }
         p7_threads.take(parks);
     }, "phase4/read");
-    
+
     L_sort_7->read(&read_thread, num_threads);
     read_thread.close();
-    
+
     park_data.offset = final_file_writer_3;
     {
         std::vector<park_data_t> parks{park_data};
@@ -205,7 +205,7 @@ uint64_t compute(    FILE* plot_file, const int header_size,
         park_threads.take(park_deltas);
     }
     Encoding::ANSFree(kC3R);
-    
+
     park_threads.close();
     p7_threads.close();
     plot_write.close();
@@ -214,7 +214,7 @@ uint64_t compute(    FILE* plot_file, const int header_size,
     Bits(0, Util::ByteAlign(k)).ToBytes(C1_entry_buf);
     final_file_writer_1 +=
             fwrite_at(plot_file, final_file_writer_1, C1_entry_buf, sizeof(C1_entry_buf));
-    
+
     std::cout << "[P4] Finished writing C1 and C3 tables" << std::endl;
     std::cout << "[P4] Writing C2 table" << std::endl;
 
@@ -226,7 +226,7 @@ uint64_t compute(    FILE* plot_file, const int header_size,
     Bits(0, Util::ByteAlign(k)).ToBytes(C1_entry_buf);
     final_file_writer_1 +=
             fwrite_at(plot_file, final_file_writer_1, C1_entry_buf, sizeof(C1_entry_buf));
-    
+
     std::cout << "[P4] Finished writing C2 table" << std::endl;
 
     final_file_writer_1 = header_size - 8 * 3;
@@ -249,22 +249,22 @@ void compute(    const phase3::output_t& input, output_t& out,
                 const std::string tmp_dir_2)
 {
     const auto total_begin = get_wall_time_micros();
-    
+
     FILE* plot_file = fopen(input.plot_file_name.c_str(), "rb+");
     if(!plot_file) {
         throw std::runtime_error("fopen() failed");
     }
-    
+
     out.plot_size = compute(plot_file, input.header_size, input.sort_7.get(),
                             num_threads, input.final_pointer_7, input.num_written_7);
-    
+
     fclose(plot_file);
-    
+
     out.params = input.params;
     out.plot_file_name = tmp_dir + plot_name + ".plot";
-    
+
     std::rename(input.plot_file_name.c_str(), out.plot_file_name.c_str());
-    
+
     std::cout << "Phase 4 took " << (get_wall_time_micros() - total_begin) / 1e6 << " sec"
             ", final plot size is " << out.plot_size << " bytes" << std::endl;
 }

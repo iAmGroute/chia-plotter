@@ -66,7 +66,7 @@ struct bitfield
 
         auto const* start = buffer_.get() + start_bit / 64;
         auto const* end = buffer_.get() + end_bit / 64;
-        
+
         int64_t ret = 0;
         while (start != end) {
             ret += Util::PopCount(*start);
@@ -85,19 +85,19 @@ struct bitfield
         buffer_.reset();
         size_ = 0;
     }
-    
+
     void write(FILE* file) const {
         if(fwrite(buffer_.get(), sizeof(uint64_t), size_, file) != size_t(size_)) {
             throw std::runtime_error("fwrite() failed");
         }
     }
-    
+
     void read(FILE* file) {
         if(fread(buffer_.get(), sizeof(uint64_t), size_, file) != size_t(size_)) {
             throw std::runtime_error("fread() failed");
         }
     }
-    
+
 private:
     std::unique_ptr<std::atomic<uint64_t>[]> buffer_;
 

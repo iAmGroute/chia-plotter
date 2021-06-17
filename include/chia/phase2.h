@@ -26,9 +26,9 @@ struct entry_x {
     uint32_t key;
     uint32_t pos;
     uint16_t off;        // 10 bit
-    
+
     static constexpr size_t disk_size = 10;
-    
+
     void assign(const phase1::tmp_entry_x& entry) {
         pos = entry.pos;
         off = entry.off;

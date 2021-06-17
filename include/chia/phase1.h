@@ -31,11 +31,11 @@ struct input_t {
 struct entry_1 {
     uint64_t y;            // 38 bit
     uint32_t x;            // 32 bit
-    
+
     static constexpr uint32_t pos = 0;        // dummy
     static constexpr uint16_t off = 0;        // dummy
     static constexpr size_t disk_size = 9;
-    
+
     size_t read(const uint8_t* buf) {
         y = 0;
         memcpy(&y, buf, 5);
@@ -58,9 +58,9 @@ struct entry_x {
 template<int N>
 struct entry_xm : entry_x {
     std::array<uint8_t, N * 4> meta;
-    
+
     static constexpr size_t disk_size = 10 + N * 4;
-    
+
     size_t read(const uint8_t* buf) {
         memcpy(&y, buf, 5);
         y &= 0x3FFFFFFFFFull;
@@ -91,9 +91,9 @@ struct entry_7 {
     uint32_t y;            // 32 bit
     uint32_t pos;        // 32 bit
     uint16_t off;        // 10 bit
-    
+
     static constexpr size_t disk_size = 10;
-    
+
     void assign(const entry_7& entry) {
         *this = entry;
     }
@@ -113,9 +113,9 @@ struct entry_7 {
 
 struct tmp_entry_1 {
     uint32_t x;            // 32 bit
-    
+
     static constexpr size_t disk_size = 4;
-    
+
     void assign(const entry_1& entry) {
         x = entry.x;
     }
@@ -132,9 +132,9 @@ struct tmp_entry_1 {
 struct tmp_entry_x {
     uint32_t pos;        // 32 bit
     uint16_t off;        // 10 bit
-    
+
     static constexpr size_t disk_size = 6;
-    
+
     void assign(const entry_x& entry) {
         pos = entry.pos;
         off = entry.off;

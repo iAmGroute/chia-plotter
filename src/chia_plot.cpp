@@ -23,7 +23,7 @@
 #include <sys/resource.h>
 #endif
 
-#ifdef __linux__ 
+#ifdef __linux__
     #include <unistd.h>
     #define GETPID getpid
 #elif _WIN32
@@ -66,7 +66,7 @@ phase4::output_t create_plot(    const int num_threads,
     std::cout << "Number of Threads: " << num_threads << std::endl;
     std::cout << "Number of Buckets: 2^" << log_num_buckets
             << " (" << (1 << log_num_buckets) << ")" << std::endl;
-    
+
     bls::G1Element pool_key;
     bls::G1Element farmer_key;
     try {
@@ -83,20 +83,20 @@ phase4::output_t create_plot(    const int num_threads,
     }
     std::cout << "Pool Public Key:   " << bls::Util::HexStr(pool_key.Serialize()) << std::endl;
     std::cout << "Farmer Public Key: " << bls::Util::HexStr(farmer_key.Serialize()) << std::endl;
-    
+
     vector<uint8_t> seed(32);
     randombytes_buf(seed.data(), seed.size());
-    
+
     bls::AugSchemeMPL MPL;
     const bls::PrivateKey master_sk = MPL.KeyGen(seed);
-    
+
     bls::PrivateKey local_sk = master_sk;
     for(uint32_t i : {12381, 8444, 3, 0}) {
         local_sk = MPL.DeriveChildSk(local_sk, i);
     }
     const bls::G1Element local_key = local_sk.GetG1Element();
     const bls::G1Element plot_key = local_key + farmer_key;
-    
+
     phase1::input_t params;
     {
         vector<uint8_t> bytes = pool_key.Serialize();
@@ -108,11 +108,11 @@ phase4::output_t create_plot(    const int num_threads,
     }
     const std::string plot_name = "plot-k32-" + get_date_string_ex("%Y-%m-%d-%H-%M")
             + "-" + bls::Util::HexStr(params.id.data(), params.id.size());
-    
+
     std::cout << "Working Directory:   " << (tmp_dir.empty() ? "$PWD" : tmp_dir) << std::endl;
     std::cout << "Working Directory 2: " << (tmp_dir_2.empty() ? "$PWD" : tmp_dir_2) << std::endl;
     std::cout << "Plot Name: " << plot_name << std::endl;
-    
+
     // memo = bytes(pool_public_key) + bytes(farmer_public_key) + bytes(local_master_sk)
     params.memo.insert(params.memo.end(), pool_key_bytes.begin(), pool_key_bytes.end());
     params.memo.insert(params.memo.end(), farmer_key_bytes.begin(), farmer_key_bytes.end());
@@ -121,19 +121,19 @@ phase4::output_t create_plot(    const int num_threads,
         params.memo.insert(params.memo.end(), bytes.begin(), bytes.end());
     }
     params.plot_name = plot_name;
-    
+
     phase1::output_t out_1;
     phase1::compute(params, out_1, num_threads, log_num_buckets, plot_name, tmp_dir, tmp_dir_2);
-    
+
     phase2::output_t out_2;
     phase2::compute(out_1, out_2, num_threads, log_num_buckets, plot_name, tmp_dir, tmp_dir_2);
-    
+
     phase3::output_t out_3;
     phase3::compute(out_2, out_3, num_threads, log_num_buckets, plot_name, tmp_dir, tmp_dir_2);
-    
+
     phase4::output_t out_4;
     phase4::compute(out_3, out_4, num_threads, log_num_buckets, plot_name, tmp_dir, tmp_dir_2);
-    
+
     const auto time_secs = (get_wall_time_micros() - total_begin) / 1e6;
     std::cout << "Total plot creation time was "
             << time_secs << " sec (" << time_secs / 60. << " min)" << std::endl;
@@ -156,7 +156,7 @@ int main(int argc, char** argv)
         "Combined (tmpdir + tmpdir2) peak disk usage is less than 256 GiB.\n"
         "In case of <count> != 1, you may press Ctrl-C for graceful termination after current plot is finished.\n"
     );
-    
+
     std::string pool_key_str;
     std::string farmer_key_str;
     std::string tmp_dir;
@@ -165,7 +165,7 @@ int main(int argc, char** argv)
     int num_plots = 1;
     int num_threads = 4;
     int num_buckets = 256;
-    
+
     options.allow_unrecognised_options().add_options()(
         "n, count", "Number of plots to create (default = 1, -1 = infinite)", cxxopts::value<int>(num_plots))(
         "r, threads", "Number of threads (default = 4)", cxxopts::value<int>(num_threads))(
@@ -176,13 +176,13 @@ int main(int argc, char** argv)
         "p, poolkey", "Pool Public Key (48 bytes)", cxxopts::value<std::string>(pool_key_str))(
         "f, farmerkey", "Farmer Public Key (48 bytes)", cxxopts::value<std::string>(farmer_key_str))(
         "help", "Print help");
-    
+
     if(argc <= 1) {
         std::cout << options.help({""}) << std::endl;
         return 0;
     }
     const auto args = options.parse(argc, argv);
-    
+
     if(args.count("help")) {
         std::cout << options.help({""}) << std::endl;
         return 0;
@@ -270,7 +270,7 @@ int main(int argc, char** argv)
         }
     }
     const int num_files_max = (1 << log_num_buckets) + 20;
-    
+
 #ifndef _WIN32
     {
         // try to increase the open file limit
@@ -282,7 +282,7 @@ int main(int argc, char** argv)
         }
     }
 #endif
-    
+
     {
         // check that we can open required amount of files
         std::vector<std::pair<FILE*, std::string>> files;
@@ -306,11 +306,11 @@ int main(int argc, char** argv)
         std::signal(SIGINT, interrupt_handler);
         std::signal(SIGTERM, interrupt_handler);
     }
-    
-    std::cout << "Multi-threaded pipelined Chia k32 plotter"; 
+
+    std::cout << "Multi-threaded pipelined Chia k32 plotter";
     #ifdef GIT_COMMIT_HASH
         std::cout << " - " << GIT_COMMIT_HASH;
-    #endif    
+    #endif
     std::cout << std::endl;
     std::cout << "Final Directory: " << final_dir << std::endl;
     if(num_plots >= 0) {
@@ -318,14 +318,14 @@ int main(int argc, char** argv)
     } else {
         std::cout << "Number of Plots: infinite" << std::endl;
     }
-    
+
     Thread<std::pair<std::string, std::string>> copy_thread(
         [](std::pair<std::string, std::string>& from_to) {
             const auto total_begin = get_wall_time_micros();
             while(true) {
                 try {
                     const auto bytes = final_copy(from_to.first, from_to.second);
-                    
+
                     const auto time = (get_wall_time_micros() - total_begin) / 1e6;
                     std::cout << "Copy to " << from_to.second << " finished, took " << time << " sec, "
                             << ((bytes / time) / 1024 / 1024) << " MB/s avg." << std::endl;
@@ -336,7 +336,7 @@ int main(int argc, char** argv)
                 }
             }
         }, "final/copy");
-    
+
     for(int i = 0; i < num_plots || num_plots < 0; ++i)
     {
         if (gracefully_exit) {
@@ -345,7 +345,7 @@ int main(int argc, char** argv)
         }
         std::cout << "Crafting plot " << i+1 << " out of " << num_plots << std::endl;
         const auto out = create_plot(num_threads, log_num_buckets, pool_key, farmer_key, tmp_dir, tmp_dir2);
-        
+
         if(final_dir != tmp_dir)
         {
             const auto dst_path = final_dir + out.params.plot_name + ".plot";
@@ -354,7 +354,7 @@ int main(int argc, char** argv)
         }
     }
     copy_thread.close();
-    
+
     return 0;
 }
 

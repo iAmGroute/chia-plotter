@@ -24,7 +24,7 @@ private:
         std::shared_ptr<Thread<T>> thread;
         L local;
     };
-    
+
 public:
     ThreadPool(    const std::function<void(T&, S&, L&)>& func, Processor<S>* output,
                 const int num_threads, const std::string& name = "")
@@ -46,11 +46,11 @@ public:
                     name.empty() ? name : name + "/" + std::to_string(i));
         }
     }
-    
+
     ~ThreadPool() {
         close();
     }
-    
+
     // NOT thread-safe
     void take(T& data) override {
         const auto& state = threads[next % threads.size()];
@@ -62,14 +62,14 @@ public:
         state->thread->take(data);
         next++;
     }
-    
+
     // NOT thread-safe
     void wait() {
         for(const auto& state : threads) {
             state->thread->wait();
         }
     }
-    
+
     // NOT thread-safe
     void close() {
         wait();
@@ -78,26 +78,26 @@ public:
         }
         threads.clear();
     }
-    
+
     // NOT thread-safe
     size_t num_threads() const {
         return threads.size();
     }
-    
+
     // NOT thread-safe
     L& get_local(size_t index) {
         const auto& state = threads[index];
         state->thread->wait();
         return state->local;
     }
-    
+
     // NOT thread-safe
     void set_local(size_t index, L&& value) {
         const auto& state = threads[index];
         state->thread->wait();
         state->local = value;
     }
-    
+
 private:
     void wrapper(thread_t* state, thread_t* prev, T& input)
     {
@@ -123,13 +123,13 @@ private:
         }
         state->signal.notify_all();
     }
-    
+
 private:
     uint64_t next = 0;
     Processor<S>* output = nullptr;
     std::function<void(T&, S&, L&)> execute;
     std::vector<std::shared_ptr<thread_t>> threads;
-    
+
 };
 
 

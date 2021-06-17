@@ -414,7 +414,7 @@ inline
 std::ifstream::pos_type get_file_size(const char* file_name)
 {
     std::ifstream in(file_name, std::ifstream::ate | std::ifstream::binary);
-    return in.tellg(); 
+    return in.tellg();
 }
 
 inline
