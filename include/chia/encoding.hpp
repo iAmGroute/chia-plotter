@@ -34,7 +34,7 @@
 
 class TMemoCache {
 public:
-    ~TMemoCache() 
+    ~TMemoCache()
     {
         // Clean up global entries on destruction
         std::map<double, FSE_CTable *>::iterator itc;
@@ -57,7 +57,7 @@ public:
     {
         std::lock_guard<std::mutex> l(memoMutex);
         return (DT_MEMO.find(R) != DT_MEMO.end());
-    }   
+    }
 
     void CTAssign(double R, FSE_CTable *ct)
     {

@@ -61,7 +61,7 @@ public:
     {
         uint8_t buf[64];
         chacha8_get_keystream(&enc_ctx_, index, 1, buf);
-        
+
         for(uint64_t i = 0; i < 16; ++i)
         {
             const uint64_t x = index * 16 + i;
@@ -80,7 +80,7 @@ template<typename T, typename S>
 class FxCalculator {
 public:
     static constexpr uint8_t k_ = 32;
-    
+
     FxCalculator(int table_index) {
         table_index_ = table_index;
     }
@@ -97,12 +97,12 @@ public:
         uint8_t hash_bytes[32];
         uint8_t L_meta[16];
         uint8_t R_meta[16];
-        
+
         size_t L_meta_bytes = 0;
         size_t R_meta_bytes = 0;
         get_meta<T>{}(L, L_meta, &L_meta_bytes);
         get_meta<T>{}(R, R_meta, &R_meta_bytes);
-        
+
         const Bits Y_1(L.y, k_ + kExtraBits);
         const Bits L_c(L_meta, L_meta_bytes, L_meta_bytes * 8);
         const Bits R_c(R_meta, R_meta_bytes, R_meta_bytes * 8);
@@ -151,7 +151,7 @@ public:
         uint16_t pos;
         uint16_t count;
     };
-    
+
     FxMatcher() {
         rmap.resize(kBC);
     }
@@ -214,7 +214,7 @@ public:
         }
         return idx_count;
     }
-    
+
     int find_matches(    const uint64_t& L_pos_begin,
                         const std::vector<T>& bucket_L,
                         const std::vector<T>& bucket_R,
@@ -223,7 +223,7 @@ public:
         uint16_t idx_L[kBC];
         uint16_t idx_R[kBC];
         const int count = find_matches_ex(bucket_L, bucket_R, idx_L, idx_R);
-        
+
         for(int i = 0; i < count; ++i) {
             const auto pos = L_pos_begin + idx_L[i];
             if(pos < (uint64_t(1) << 32)) {
@@ -250,11 +250,11 @@ template<typename DS>
 void compute_f1(const uint8_t* id, int num_threads, DS* T1_sort)
 {
     static constexpr size_t M = 4096;    // F1 block size
-    
+
     const auto begin = get_wall_time_micros();
-    
+
     typedef typename DS::WriteCache WriteCache;
-    
+
     ThreadPool<std::vector<entry_1>, size_t, std::shared_ptr<WriteCache>> output(
         [T1_sort](std::vector<entry_1>& input, size_t&, std::shared_ptr<WriteCache>& cache) {
             if(!cache) {
@@ -264,7 +264,7 @@ void compute_f1(const uint8_t* id, int num_threads, DS* T1_sort)
                 cache->add(entry);
             }
         }, nullptr, std::max(num_threads / 2, 1), "phase1/add");
-    
+
     ThreadPool<uint64_t, std::vector<entry_1>> pool(
         [id](uint64_t& block, std::vector<entry_1>& out, size_t&) {
             out.resize(M * 16);
@@ -273,14 +273,14 @@ void compute_f1(const uint8_t* id, int num_threads, DS* T1_sort)
                 F1.compute_block(block * M + i, &out[i * 16]);
             }
         }, &output, num_threads, "phase1/F1");
-    
+
     for(uint64_t k = 0; k < (uint64_t(1) << 28) / M; ++k) {
         pool.take_copy(k);
     }
     pool.close();
     output.close();
     T1_sort->finish();
-    
+
     std::cout << "[P1] Table 1 took " << (get_wall_time_micros() - begin) / 1e6 << " sec" << std::endl;
 }
 
@@ -296,14 +296,14 @@ uint64_t compute_matches(    int R_index, int num_threads,
     std::array<uint64_t, 2> L_offset = {};
     std::array<std::shared_ptr<std::vector<T>>, 2> L_bucket;
     double avg_bucket_size = 0;
-    
+
     struct match_input_t {
         std::array<uint64_t, 2> L_offset = {};
         std::array<std::shared_ptr<std::vector<T>>, 2> L_bucket;
     };
-    
+
     typedef typename DS_R::WriteCache WriteCache;
-    
+
     ThreadPool<std::vector<S>, size_t, std::shared_ptr<WriteCache>> R_add(
         [R_sort](std::vector<S>& input, size_t&, std::shared_ptr<WriteCache>& cache) {
             if(!cache) {
@@ -313,12 +313,12 @@ uint64_t compute_matches(    int R_index, int num_threads,
                 cache->add(entry);
             }
         }, nullptr, std::max(num_threads / 2, 1), "phase1/add");
-    
+
     Processor<std::vector<S>>* R_out = &R_add;
     if(R_tmp_out) {
         R_out = R_tmp_out;
     }
-    
+
     ThreadPool<std::vector<match_t<T>>, std::vector<S>> eval_pool(
         [R_index](std::vector<match_t<T>>& matches, std::vector<S>& out, size_t&) {
             out.reserve(matches.size());
@@ -331,7 +331,7 @@ uint64_t compute_matches(    int R_index, int num_threads,
                 out.push_back(entry);
             }
         }, R_out, num_threads, "phase1/eval");
-    
+
     ThreadPool<std::vector<match_input_t>, std::vector<match_t<T>>, FxMatcher<T>> match_pool(
         [&num_found, &num_written]
          (std::vector<match_input_t>& input, std::vector<match_t<T>>& out, FxMatcher<T>& Fx) {
@@ -341,7 +341,7 @@ uint64_t compute_matches(    int R_index, int num_threads,
             }
             num_written += out.size();
         }, &eval_pool, num_threads, "phase1/match");
-    
+
     Thread<std::pair<std::vector<T>, size_t>> read_thread(
         [&L_index, &L_offset, &L_bucket, &avg_bucket_size, &match_pool, L_tmp_out]
          (std::pair<std::vector<T>, size_t>& input) {
@@ -380,12 +380,12 @@ uint64_t compute_matches(    int R_index, int num_threads,
                 L_tmp_out->take(input.first);
             }
         }, "phase1/slice");
-    
+
     L_sort->read(&read_thread, std::max(num_threads / 2, 2));
-    
+
     read_thread.close();
     match_pool.close();
-    
+
     if(L_index[1] + 1 == L_index[0]) {
         FxMatcher<T> Fx;
         std::vector<match_t<T>> matches;
@@ -395,7 +395,7 @@ uint64_t compute_matches(    int R_index, int num_threads,
     }
     eval_pool.close();
     R_add.close();
-    
+
     if(R_sort) {
         R_sort->finish();
     }
@@ -419,24 +419,24 @@ uint64_t compute_table(    int R_index, int num_threads,
                 L_tmp->write(tmp);
             }
         }, "phase1/write/L");
-    
+
     Thread<std::vector<S>> R_write(
         [R_tmp](std::vector<S>& input) {
             for(const auto& entry : input) {
                 R_tmp->write(entry);
             }
         }, "phase1/write/R");
-    
+
     const auto begin = get_wall_time_micros();
     const auto num_matches =
             phase1::compute_matches<T, S, R>(
                     R_index, num_threads, L_sort, R_sort,
                     L_tmp ? &L_write : nullptr,
                     R_tmp ? &R_write : nullptr);
-    
+
     L_write.close();
     R_write.close();
-    
+
     if(L_tmp) {
         L_tmp->close();
     }
@@ -456,45 +456,45 @@ void compute(    const input_t& input, output_t& out,
                 const std::string tmp_dir_2)
 {
     const auto total_begin = get_wall_time_micros();
-    
+
     initialize();
-    
+
     const std::string prefix = tmp_dir + plot_name + ".p1.";
     const std::string prefix_2 = tmp_dir_2 + plot_name + ".p1.";
-    
+
     DiskSort1 sort_1(32 + kExtraBits, log_num_buckets, prefix_2 + "t1");
     compute_f1(input.id.data(), num_threads, &sort_1);
-    
+
     DiskTable<tmp_entry_1> tmp_1(prefix + "table1.tmp");
     DiskSort2 sort_2(32 + kExtraBits, log_num_buckets, prefix_2 + "t2");
     compute_table<entry_1, entry_2, tmp_entry_1>(
             2, num_threads, &sort_1, &sort_2, &tmp_1);
-    
+
     DiskTable<tmp_entry_x> tmp_2(prefix + "table2.tmp");
     DiskSort3 sort_3(32 + kExtraBits, log_num_buckets, prefix_2 + "t3");
     compute_table<entry_2, entry_3, tmp_entry_x>(
             3, num_threads, &sort_2, &sort_3, &tmp_2);
-    
+
     DiskTable<tmp_entry_x> tmp_3(prefix + "table3.tmp");
     DiskSort4 sort_4(32 + kExtraBits, log_num_buckets, prefix_2 + "t4");
     compute_table<entry_3, entry_4, tmp_entry_x>(
             4, num_threads, &sort_3, &sort_4, &tmp_3);
-    
+
     DiskTable<tmp_entry_x> tmp_4(prefix + "table4.tmp");
     DiskSort5 sort_5(32 + kExtraBits, log_num_buckets, prefix_2 + "t5");
     compute_table<entry_4, entry_5, tmp_entry_x>(
             5, num_threads, &sort_4, &sort_5, &tmp_4);
-    
+
     DiskTable<tmp_entry_x> tmp_5(prefix + "table5.tmp");
     DiskSort6 sort_6(32 + kExtraBits, log_num_buckets, prefix_2 + "t6");
     compute_table<entry_5, entry_6, tmp_entry_x>(
             6, num_threads, &sort_5, &sort_6, &tmp_5);
-    
+
     DiskTable<tmp_entry_x> tmp_6(prefix + "table6.tmp");
     DiskTable<entry_7> tmp_7(prefix_2 + "table7.tmp");
     compute_table<entry_6, entry_7, tmp_entry_x, DiskSort6, DiskSort7>(
             7, num_threads, &sort_6, nullptr, &tmp_6, &tmp_7);
-    
+
     out.params = input;
     out.table[0] = tmp_1.get_info();
     out.table[1] = tmp_2.get_info();
@@ -503,7 +503,7 @@ void compute(    const input_t& input, output_t& out,
     out.table[4] = tmp_5.get_info();
     out.table[5] = tmp_6.get_info();
     out.table[6] = tmp_7.get_info();
-    
+
     std::cout << "Phase 1 took " << (get_wall_time_micros() - total_begin) / 1e6 << " sec" << std::endl;
 }
 

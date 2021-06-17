@@ -15,10 +15,10 @@ int main(int argc, char** argv)
     if(argc < 3) {
         return -1;
     }
-    
+
     const auto bytes = final_copy(argv[1], argv[2]);
-    
+
     std::cout << bytes << " bytes copied" <<  std::endl;
-    
+
     return 0;
 }

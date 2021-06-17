@@ -27,7 +27,7 @@ private:
             delete [] buffer;
         }
     };
-    
+
 public:
     DiskTable(std::string file_name, size_t num_entries = 0)
         :    file_name(file_name),
@@ -37,26 +37,26 @@ public:
             file_out = fopen(file_name.c_str(), "wb");
         }
     }
-    
+
     DiskTable(const table_t& info)
         :    DiskTable(info.file_name, info.num_entries)
     {
     }
-    
+
     ~DiskTable() {
         close();
     }
-    
+
     DiskTable(DiskTable&) = delete;
     DiskTable& operator=(DiskTable&) = delete;
-    
+
     table_t get_info() const {
         table_t out;
         out.file_name = file_name;
         out.num_entries = num_entries;
         return out;
     }
-    
+
     void read(    Processor<std::pair<std::vector<T>, size_t>>* output,
                 int num_threads_read = 2,
                 const size_t block_size = g_read_chunk_size) const
@@ -65,7 +65,7 @@ public:
             std::bind(&DiskTable::read_block, this,
                     std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
             output, num_threads_read, "Table/read");
-        
+
         for(size_t i = 0; i < pool.num_threads(); ++i)
         {
             FILE* file = fopen(file_name.c_str(), "rb");
@@ -78,7 +78,7 @@ public:
         }
         const size_t num_blocks = num_entries / block_size;
         const size_t left_over = num_entries % block_size;
-        
+
         size_t offset = 0;
         for(size_t i = 0; i < num_blocks; ++i) {
             pool.take_copy(std::make_pair(offset, block_size));
@@ -89,7 +89,7 @@ public:
         }
         pool.close();
     }
-    
+
     // NOT thread-safe
     void write(const T& entry) {
         if(cache.count >= cache.capacity) {
@@ -98,7 +98,7 @@ public:
         entry.write(cache.entry_at(cache.count));
         cache.count++;
     }
-    
+
     void flush() {
         if(fwrite(cache.data, cache.entry_size, cache.count, file_out) != cache.count) {
             throw std::runtime_error("fwrite() failed");
@@ -106,7 +106,7 @@ public:
         num_entries += cache.count;
         cache.count = 0;
     }
-    
+
     void close() {
         if(file_out) {
             flush();
@@ -114,7 +114,7 @@ public:
             file_out = nullptr;
         }
     }
-    
+
 private:
     void read_block(std::pair<size_t, size_t>& param,
                     std::pair<std::vector<T>, size_t>& out,
@@ -133,14 +133,14 @@ private:
         }
         out.second = param.first;
     }
-    
+
 private:
     std::string file_name;
     size_t num_entries;
-    
+
     write_buffer_t<T> cache;
     FILE* file_out = nullptr;
-    
+
 };
 
 

@@ -23,7 +23,7 @@ void gather_x(int depth, uint64_t pos, uint16_t off, std::vector<uint32_t>& out)
         read_entry(f, entry);
 //        std::cout << "[" << depth + 1 << "] x=" << entry.x << std::endl;
         out.push_back(entry.x);
-        
+
         fseek_set(f, (pos + off) * tmp_entry_1::disk_size);
         read_entry(f, entry);
 //        std::cout << "[" << depth + 1 << "] x=" << entry.x << std::endl;
@@ -34,7 +34,7 @@ void gather_x(int depth, uint64_t pos, uint16_t off, std::vector<uint32_t>& out)
         read_entry(f, entry);
 //        std::cout << "[" << depth + 1 << "] pos=" << entry.pos << ", off=" << entry.off << std::endl;
         gather_x(depth - 1, entry.pos, entry.off, out);
-        
+
         fseek_set(f, (pos + off) * tmp_entry_x::disk_size);
         read_entry(f, entry);
 //        std::cout << "[" << depth + 1 << "] pos=" << entry.pos << ", off=" << entry.off << std::endl;
@@ -59,7 +59,7 @@ int main()
     for(size_t i = 0; i < sizeof(id); ++i) {
         id[i] = i + 1;
     }
-    
+
     for(size_t i = 0; i < table.size(); ++i)
     {
         const std::string file_name = "test.p1.table" + std::to_string(i + 1) + ".tmp";
@@ -73,28 +73,28 @@ int main()
         }
         table[i].file_name = file_name;
         table[i].num_entries = get_file_size(file_name.c_str()) / size;
-        
+
         file[i] = fopen(table[i].file_name.c_str(), "rb");
-        
+
         std::cout << "Table " << (i + 1) << ": "
                 << table[i].num_entries << " entries" << std::endl;
     }
-    
+
     for(int index = 0; index < 100; ++index)
     {
 //        std::cout << std::endl;
         std::vector<uint32_t> proof;
         const auto y = gather_7(1000000000 + index, proof);
-        
+
 //        std::cout << y << " :";
 //        for(auto x : proof) {
 //            std::cout << " " << x;
 //        }
 //        std::cout << " (" << proof.size() << " x 32-bit)" << std::endl;
-        
+
         uint8_t challenge[32] = {};
         chia::Bits(y, 32).ToBytes(challenge);
-        
+
         uint8_t proof_bytes[256] = {};
         {
             size_t i = 0;
@@ -106,12 +106,12 @@ int main()
             chia::LargeBits bits(proof_bytes, sizeof(proof_bytes), sizeof(proof_bytes) * 8);
 //            std::cout << "proof = " << bits.ToString() << std::endl;
         }
-        
+
         chia::Verifier verify;
         const auto qual = verify.ValidateProof(id, 32, challenge, proof_bytes, sizeof(proof_bytes));
         std::cout << "quality = " << qual.ToString() << std::endl;
     }
-    
+
     return 0;
 }
 

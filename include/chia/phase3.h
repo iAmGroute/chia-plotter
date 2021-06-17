@@ -21,9 +21,9 @@ struct entry_kpp {
 struct entry_lp {
     uint64_t point;        // 63-bit (line_point)
     uint32_t key;        // 32-bit (sort_key)
-    
+
     static constexpr size_t disk_size = 12;
-    
+
     size_t read(const uint8_t* buf) {
         memcpy(&point, buf, 8);
         memcpy(&key, buf + 8, 4);
@@ -39,9 +39,9 @@ struct entry_lp {
 struct entry_np {
     uint32_t key;        // 32-bit (sort_key)
     uint32_t pos;        // 32-bit (new_pos)
-    
+
     static constexpr size_t disk_size = 8;
-    
+
     size_t read(const uint8_t* buf) {
         memcpy(&key, buf, 4);
         memcpy(&pos, buf + 4, 4);
