@@ -469,11 +469,13 @@ uint64_t compute_stage2(int L_index, int num_threads,
     return num_written_final;
 }
 
-inline
-void compute(    phase2::output_t& input, output_t& out,
-                const int num_threads, const int log_num_buckets,
-                const std::string plot_name,
-                const std::string tmp_dir
+inline void compute(
+    const phase2::output_t& input,
+                  output_t& out,
+    const int               num_threads,
+    const int               log_num_buckets,
+    const std::string       plot_name,
+    const std::string       tmp_dir
 ) {
     const auto total_begin = get_wall_time_micros();
 
