@@ -14,9 +14,9 @@
 namespace phase4 {
 
 struct output_t {
-	phase1::input_t params;
-	uint64_t plot_size = 0;
-	std::string plot_file_name;
+    phase1::input_t params;
+    uint64_t plot_size = 0;
+    std::string plot_file_name;
 };
 
 

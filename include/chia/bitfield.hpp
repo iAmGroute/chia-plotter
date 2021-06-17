@@ -45,8 +45,8 @@ struct bitfield
 
     void clear()
     {
-    	for(int64_t i = 0; i < size_; ++i) {
-        	buffer_[i] = 0;
+        for(int64_t i = 0; i < size_; ++i) {
+            buffer_[i] = 0;
         }
     }
 
@@ -87,15 +87,15 @@ struct bitfield
     }
     
     void write(FILE* file) const {
-    	if(fwrite(buffer_.get(), sizeof(uint64_t), size_, file) != size_t(size_)) {
-    		throw std::runtime_error("fwrite() failed");
-    	}
+        if(fwrite(buffer_.get(), sizeof(uint64_t), size_, file) != size_t(size_)) {
+            throw std::runtime_error("fwrite() failed");
+        }
     }
     
     void read(FILE* file) {
-    	if(fread(buffer_.get(), sizeof(uint64_t), size_, file) != size_t(size_)) {
-    		throw std::runtime_error("fread() failed");
-    	}
+        if(fread(buffer_.get(), sizeof(uint64_t), size_, file) != size_t(size_)) {
+            throw std::runtime_error("fread() failed");
+        }
     }
     
 private:

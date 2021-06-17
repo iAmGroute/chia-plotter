@@ -280,25 +280,25 @@ static int local_hist_4_32v2(void* dst, size_t dstSize, const void* src, size_t 
 
   while (ip32 <= ip32end-4)
   {
-    U32 c = cp,	d = *(++ip32); cp = *(++ip32);
+    U32 c = cp,    d = *(++ip32); cp = *(++ip32);
     c0[(BYTE) c    ]++;
     c1[(BYTE) d    ]++;
     c2[(BYTE)(c>>8)]++; c>>=16;
     c3[(BYTE)(d>>8)]++; d>>=16;
     c0[(BYTE) c    ]++;
     c1[(BYTE) d    ]++;
-    c2[ 	  c>>8 ]++;
-    c3[ 	  d>>8 ]++;
+    c2[       c>>8 ]++;
+    c3[       d>>8 ]++;
 
-    c = cp;	d = *(++ip32); cp = *(++ip32);
+    c = cp;    d = *(++ip32); cp = *(++ip32);
     c0[(BYTE) c    ]++;
     c1[(BYTE) d    ]++;
     c2[(BYTE)(c>>8)]++; c>>=16;
     c3[(BYTE)(d>>8)]++; d>>=16;
     c0[(BYTE) c    ]++;
     c1[(BYTE) d    ]++;
-    c2[ 	  c>>8 ]++;
-    c3[ 	  d>>8 ]++;
+    c2[       c>>8 ]++;
+    c3[       d>>8 ]++;
   }
 
   ip = (const BYTE*)ip32;
@@ -326,7 +326,7 @@ static int local_hist_8_32(void* dst, size_t dstSize, const void* src, size_t sr
 
     while( ip32 <= ip32end - 4 )
     {
-        U32 c = cp,	d = *(++ip32); cp = *(++ip32);
+        U32 c = cp,    d = *(++ip32); cp = *(++ip32);
         c0[(unsigned char) c ]++;
         c1[(unsigned char) d ]++;
         c2[(unsigned char)(c>>8)]++; c>>=16;
