@@ -368,7 +368,7 @@ size_t HUF_buildCTable_wksp (HUF_CElt* tree, const U32* count, U32 maxSymbolValu
 
     /* init for parents */
     nonNullRank = maxSymbolValue;
-    while(huffNode[nonNullRank].count == 0) nonNullRank--;
+    while (huffNode[nonNullRank].count == 0) nonNullRank--;
     lowS = nonNullRank; nodeRoot = nodeNb + lowS - 1; lowN = nodeNb;
     huffNode[nodeNb].count = huffNode[lowS].count + huffNode[lowS-1].count;
     huffNode[lowS].parent = huffNode[lowS-1].parent = nodeNb;

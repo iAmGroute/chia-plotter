@@ -49,7 +49,7 @@ public:
     // thread-safe
     void take(T& data) override {
         std::unique_lock<std::mutex> lock(mutex);
-        while(do_run && is_avail) {
+        while (do_run && is_avail) {
             signal.wait(lock);
         }
         if (!do_run) {
@@ -60,7 +60,7 @@ public:
 
         if (is_busy) {
             // wait for thread to take new input (no triple buffering)
-            while(do_run && is_avail && is_busy) {
+            while (do_run && is_avail && is_busy) {
                 signal.notify_all();
                 signal.wait(lock);
             }
@@ -74,7 +74,7 @@ public:
     // wait for thread to finish all pending input [thread-safe]
     void wait() {
         std::unique_lock<std::mutex> lock(mutex);
-        while(do_run && (is_avail || is_busy)) {
+        while (do_run && (is_avail || is_busy)) {
             signal.wait(lock);
         }
         if (is_fail) {
@@ -108,8 +108,8 @@ private:
 #endif
         }
         std::unique_lock<std::mutex> lock(mutex);
-        while(true) {
-            while(do_run && !is_avail) {
+        while (true) {
+            while (do_run && !is_avail) {
                 signal.notify_all();    // notify about is_busy change
                 signal.wait(lock);
             }

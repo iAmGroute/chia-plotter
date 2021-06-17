@@ -212,9 +212,9 @@ void BMK_benchMem285(chunkParameters_t* chunkP, int nbChunks, const char* inFile
 
         nbLoops = 0;
         clockStart = clock();
-        while(clock() == clockStart);
+        while (clock() == clockStart);
         clockStart = clock();
-        while(BMK_clockSpan(clockStart) < TIMELOOP) {
+        while (BMK_clockSpan(clockStart) < TIMELOOP) {
             for (chunkNb=0; chunkNb<nbChunks; chunkNb++) {
                 const void* rawPtr = chunkP[chunkNb].origBuffer;
                 const U16* U16chunkPtr = (const U16*) rawPtr;
@@ -239,9 +239,9 @@ void BMK_benchMem285(chunkParameters_t* chunkP, int nbChunks, const char* inFile
 
         nbLoops = 0;
         clockStart = clock();
-        while(clock() == clockStart);
+        while (clock() == clockStart);
         clockStart = clock();
-        while(BMK_clockSpan(clockStart) < TIMELOOP) {
+        while (BMK_clockSpan(clockStart) < TIMELOOP) {
             for (chunkNb=0; chunkNb<nbChunks; chunkNb++) {
                 void* rawPtr = chunkP[chunkNb].destBuffer;
                 U16* U16dstPtr = (U16*)rawPtr;
@@ -347,9 +347,9 @@ void BMK_benchMem(chunkParameters_t* chunkP, int nbChunks,
         { int i; for (i=0; i<benchedSize; i++) chunkP[0].compressedBuffer[i]=(char)i; }    /* warmimg up memory */
 
         clockStart = clock();
-        while(clock() == clockStart);
+        while (clock() == clockStart);
         clockStart = clock();
-        while(BMK_clockSpan(clockStart) < TIMELOOP) {
+        while (BMK_clockSpan(clockStart) < TIMELOOP) {
             for (chunkNb=0; chunkNb<nbChunks; chunkNb++) {
                 size_t const cBSize = compressor(
                             chunkP[chunkNb].compressedBuffer, FSE_compressBound(chunkP[chunkNb].origSize),
@@ -384,7 +384,7 @@ void BMK_benchMem(chunkParameters_t* chunkP, int nbChunks,
         { int i; for (i=0; i<benchedSize; i++) chunkP[0].destBuffer[i]=0; }     /* zeroing area, for CRC checking */
 
         clockStart = clock();
-        while(clock() == clockStart);
+        while (clock() == clockStart);
         clockStart = clock();
         for (nbLoops=0; nbLoops < nbDecodeLoops; nbLoops++) {
             for (chunkNb=0; chunkNb<nbChunks; chunkNb++) {
@@ -627,9 +627,9 @@ static void BMK_benchCore_Mem(char* dst,
 
         nbLoops = 0;
         clockStart = clock();
-        while(clock() == clockStart);
+        while (clock() == clockStart);
         clockStart = clock();
-        while(BMK_clockSpan(clockStart) < TIMELOOP) {
+        while (BMK_clockSpan(clockStart) < TIMELOOP) {
             cSize = FSE_compress_usingCTable(dst, FSE_compressBound(benchedSize), src, benchedSize, ct);
             nbLoops++;
         }
@@ -647,9 +647,9 @@ static void BMK_benchCore_Mem(char* dst,
 
         nbLoops = 0;
         clockStart = clock();
-        while(clock() == clockStart);
+        while (clock() == clockStart);
         clockStart = clock();
-        while(BMK_clockSpan(clockStart) < TIMELOOP) {
+        while (BMK_clockSpan(clockStart) < TIMELOOP) {
             dSize = FSE_decompress_usingDTable(src, benchedSize, dst, cSize, dt);
             nbLoops++;
         }

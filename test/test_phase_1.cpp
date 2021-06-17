@@ -19,7 +19,7 @@ int main(int argc, char** argv)
     const int log_num_buckets = argc > 2 ? atoi(argv[2]) : 7;
 
     uint8_t id[32] = {};
-    for(size_t i = 0; i < sizeof(id); ++i) {
+    for (size_t i = 0; i < sizeof(id); ++i) {
         id[i] = i + 1;
     }
 

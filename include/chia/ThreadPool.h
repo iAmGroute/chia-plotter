@@ -34,10 +34,10 @@ public:
         if (num_threads < 1) {
             throw std::logic_error("num_threads < 1");
         }
-        for(int i = 0; i < num_threads; ++i) {
+        for (int i = 0; i < num_threads; ++i) {
             threads.push_back(std::make_shared<thread_t>());
         }
-        for(int i = 0; i < num_threads; ++i) {
+        for (int i = 0; i < num_threads; ++i) {
             threads[i]->thread = std::make_shared<Thread<T>>(
                     std::bind(&ThreadPool::wrapper, this,
                             threads[i].get(),
@@ -65,7 +65,7 @@ public:
 
     // NOT thread-safe
     void wait() {
-        for(const auto& state : threads) {
+        for (const auto& state : threads) {
             state->thread->wait();
         }
     }
@@ -73,7 +73,7 @@ public:
     // NOT thread-safe
     void close() {
         wait();
-        for(const auto& state : threads) {
+        for (const auto& state : threads) {
             state->thread->close();
         }
         threads.clear();
@@ -110,7 +110,7 @@ private:
         execute(input, out, state->local);
         {
             std::unique_lock<std::mutex> lock(prev->mutex);
-            while(prev->job < job) {
+            while (prev->job < job) {
                 prev->signal.wait(lock);
             }
         }

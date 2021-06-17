@@ -22,7 +22,7 @@ int main(int argc, char** argv)
     const auto total_begin = get_wall_time_micros();
 
     uint8_t id[32] = {};
-    for(size_t i = 0; i < sizeof(id); ++i) {
+    for (size_t i = 0; i < sizeof(id); ++i) {
         id[i] = i + 1;
     }
 
@@ -72,7 +72,7 @@ int main(int argc, char** argv)
             1, num_threads, R_sort_lp.get(), L_sort_np.get(),
             plot_file, final_pointers[1], &final_pointers[2]);
 
-    for(int L_index = 2; L_index < 6; ++L_index)
+    for (int L_index = 2; L_index < 6; ++L_index)
     {
         const std::string R_t = "t" + std::to_string(L_index + 1);
 
@@ -109,7 +109,7 @@ int main(int argc, char** argv)
     num_written_final += num_written_final_7;
 
     fseek_set(plot_file, header_size - 10 * 8);
-    for(size_t i = 1; i < final_pointers.size(); ++i) {
+    for (size_t i = 1; i < final_pointers.size(); ++i) {
         uint8_t tmp[8] = {};
         Util::IntToEightBytes(tmp, final_pointers[i]);
         fwrite_ex(plot_file, tmp, sizeof(tmp));

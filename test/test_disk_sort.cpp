@@ -31,7 +31,7 @@ int main(int argc, char** argv)
         DiskSort1 sort(test_bits, log_num_buckets, "test");
 
         const auto add_begin = get_wall_time_micros();
-        for(size_t i = 0; i < test_size; ++i) {
+        for (size_t i = 0; i < test_size; ++i) {
             phase1::entry_1 entry = {};
             entry.y = generator() % test_size;
             entry.x = i;
@@ -44,7 +44,7 @@ int main(int argc, char** argv)
 
         Thread<std::pair<std::vector<phase1::entry_1>, size_t>> thread(
             [out](std::pair<std::vector<phase1::entry_1>, size_t>& input) {
-                for(const auto& entry : input.first) {
+                for (const auto& entry : input.first) {
                     write_entry(out, entry);
                 }
             }, "test_output");
@@ -63,7 +63,7 @@ int main(int argc, char** argv)
         DiskSort4 sort(test_bits, log_num_buckets, "test");
 
         const auto add_begin = get_wall_time_micros();
-        for(size_t i = 0; i < test_size; ++i) {
+        for (size_t i = 0; i < test_size; ++i) {
             phase1::entry_4 entry = {};
             entry.y = generator() % test_size;
             entry.pos = i;
@@ -77,7 +77,7 @@ int main(int argc, char** argv)
 
         Thread<std::pair<std::vector<phase1::entry_4>, size_t>> thread(
             [out, &f_max](std::pair<std::vector<phase1::entry_4>, size_t>& input) {
-                for(const auto& entry : input.first) {
+                for (const auto& entry : input.first) {
                     write_entry(out, entry);
                     if (entry.y < f_max) {
                         throw std::logic_error("entry.f < f_max");

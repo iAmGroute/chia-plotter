@@ -81,7 +81,7 @@ void DiskSort<T, Key>::WriteCache::add(const T& entry)
 template<typename T, typename Key>
 void DiskSort<T, Key>::WriteCache::flush()
 {
-    for(size_t index = 0; index < buckets.size(); ++index) {
+    for (size_t index = 0; index < buckets.size(); ++index) {
         auto& buffer = buckets[index];
         if (buffer.count) {
             disk->write(index, buffer.data, buffer.count);
@@ -101,7 +101,7 @@ DiskSort<T, Key>::DiskSort(    int key_size, int log_num_buckets,
         cache(this, key_size - log_num_buckets, 1 << log_num_buckets),
         buckets(1 << log_num_buckets)
 {
-    for(size_t i = 0; i < buckets.size(); ++i) {
+    for (size_t i = 0; i < buckets.size(); ++i) {
         auto& bucket = buckets[i];
         bucket.file_name = file_prefix + ".sort_bucket_" + std::to_string(i) + ".tmp";
         if (read_only) {
@@ -156,7 +156,7 @@ void DiskSort<T, Key>::read(Processor<std::pair<std::vector<T>, size_t>>* output
 
     Thread<std::vector<std::pair<std::vector<T>, size_t>>> sort_thread(
         [&sort_pool](std::vector<std::pair<std::vector<T>, size_t>>& input) {
-            for(auto& block : input) {
+            for (auto& block : input) {
                 sort_pool.take(block);
             }
         }, "Disk/sort");
@@ -169,7 +169,7 @@ void DiskSort<T, Key>::read(Processor<std::pair<std::vector<T>, size_t>>* output
         &sort_thread, num_threads_read, "Disk/read");
 
     uint64_t offset = 0;
-    for(size_t i = 0; i < buckets.size(); ++i) {
+    for (size_t i = 0; i < buckets.size(); ++i) {
         read_pool.take_copy(std::make_pair(i, offset));
         offset += buckets[i].num_entries;
     }
@@ -193,13 +193,13 @@ void DiskSort<T, Key>::read_bucket(    std::pair<size_t, size_t>& index,
     std::unordered_map<size_t, std::vector<T>> table;
     table.reserve(size_t(1) << log_num_buckets);
 
-    for(size_t i = 0; i < bucket.num_entries;)
+    for (size_t i = 0; i < bucket.num_entries;)
     {
         const size_t num_entries = std::min(buffer.capacity, bucket.num_entries - i);
         if (fread(buffer.data, T::disk_size, num_entries, bucket.file) != num_entries) {
             throw std::runtime_error("fread() failed");
         }
-        for(size_t k = 0; k < num_entries; ++k) {
+        for (size_t k = 0; k < num_entries; ++k) {
             T entry;
             entry.read(buffer.entry_at(k));
 
@@ -216,14 +216,14 @@ void DiskSort<T, Key>::read_bucket(    std::pair<size_t, size_t>& index,
     }
 
     std::map<size_t, std::vector<T>> sorted;
-    for(auto& entry : table) {
+    for (auto& entry : table) {
         sorted.emplace(entry.first, std::move(entry.second));
     }
     table.clear();
 
     out.reserve(sorted.size());
     uint64_t offset = index.second;
-    for(auto& entry : sorted) {
+    for (auto& entry : sorted) {
         const auto count = entry.second.size();
         out.emplace_back(std::move(entry.second), offset);
         offset += count;
@@ -234,7 +234,7 @@ template<typename T, typename Key>
 void DiskSort<T, Key>::finish()
 {
     cache.flush();
-    for(auto& bucket : buckets) {
+    for (auto& bucket : buckets) {
         bucket.close();
     }
     is_finished = true;
@@ -243,7 +243,7 @@ void DiskSort<T, Key>::finish()
 template<typename T, typename Key>
 void DiskSort<T, Key>::close()
 {
-    for(auto& bucket : buckets) {
+    for (auto& bucket : buckets) {
         bucket.close();
         if (!keep_files) {
             bucket.remove();

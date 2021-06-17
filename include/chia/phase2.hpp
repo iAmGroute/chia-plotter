@@ -33,7 +33,7 @@ void compute_table(    int R_index, int num_threads,
         ThreadPool<std::pair<std::vector<T>, size_t>, size_t> pool(
             [L_used, R_used](std::pair<std::vector<T>, size_t>& input, size_t&, size_t&) {
                 uint64_t offset = 0;
-                for(const auto& entry : input.first) {
+                for (const auto& entry : input.first) {
                     if (R_used && !R_used->get(input.second + (offset++))) {
                         continue;    // drop it
                     }
@@ -58,7 +58,7 @@ void compute_table(    int R_index, int num_threads,
 
     Thread<std::vector<S>> R_write(
         [R_file](std::vector<S>& input) {
-            for(auto& entry : input) {
+            for (auto& entry : input) {
                 R_file->write(entry);
             }
         }, "phase2/write");
@@ -68,7 +68,7 @@ void compute_table(    int R_index, int num_threads,
             if (!cache) {
                 cache = R_sort->add_cache();
             }
-            for(auto& entry : input) {
+            for (auto& entry : input) {
                 cache->add(entry);
             }
         }, nullptr, std::max(num_threads / 2, 1), "phase2/add");
@@ -80,7 +80,7 @@ void compute_table(    int R_index, int num_threads,
 
     Thread<std::vector<S>> R_count(
         [R_out, &num_written](std::vector<S>& input) {
-            for(auto& entry : input) {
+            for (auto& entry : input) {
                 set_sort_key<S>{}(entry, num_written++);
             }
             R_out->take(input);
@@ -90,7 +90,7 @@ void compute_table(    int R_index, int num_threads,
         [&index, R_used](std::pair<std::vector<T>, size_t>& input, std::vector<S>& out, size_t&) {
             out.reserve(input.first.size());
             uint64_t offset = 0;
-            for(const auto& entry : input.first) {
+            for (const auto& entry : input.first) {
                 if (R_used && !R_used->get(input.second + (offset++))) {
                     continue;    // drop it
                 }
@@ -135,7 +135,7 @@ void compute(    const phase1::output_t& input, output_t& out,
     const std::string prefix_2 = tmp_dir_2 + plot_name + ".p2.";
 
     size_t max_table_size = 0;
-    for(const auto& table : input.table) {
+    for (const auto& table : input.table) {
         max_table_size = std::max(max_table_size, table.num_entries);
     }
     std::cout << "[P2] max_table_size = " << max_table_size << std::endl;
@@ -151,7 +151,7 @@ void compute(    const phase1::output_t& input, output_t& out,
     table_7.close();
     remove(input.table[6].file_name);
 
-    for(int i = 5; i >= 1; --i)
+    for (int i = 5; i >= 1; --i)
     {
         std::swap(curr_bitfield, next_bitfield);
         out.sort[i] = std::make_shared<DiskSortT>(32, log_num_buckets, prefix + "t" + std::to_string(i + 1));
