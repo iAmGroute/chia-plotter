@@ -92,7 +92,6 @@ private:
     bool keep_files = false;
     bool is_finished = false;
 
-    WriteCache cache;
     std::vector<bucket_t> buckets;
 
 };

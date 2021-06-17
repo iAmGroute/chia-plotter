@@ -98,7 +98,6 @@ DiskSort<T, Key>::DiskSort(    int key_size, int log_num_buckets,
         bucket_key_shift(key_size - log_num_buckets),
         keep_files(read_only),
         is_finished(read_only),
-        cache(this, key_size - log_num_buckets, 1 << log_num_buckets),
         buckets(1 << log_num_buckets)
 {
     for(size_t i = 0; i < buckets.size(); ++i) {
@@ -110,12 +109,6 @@ DiskSort<T, Key>::DiskSort(    int key_size, int log_num_buckets,
             bucket.open("wb");
         }
     }
-}
-
-template<typename T, typename Key>
-void DiskSort<T, Key>::add(const T& entry)
-{
-    cache.add(entry);
 }
 
 template<typename T, typename Key>
@@ -233,7 +226,6 @@ void DiskSort<T, Key>::read_bucket(    std::pair<size_t, size_t>& index,
 template<typename T, typename Key>
 void DiskSort<T, Key>::finish()
 {
-    cache.flush();
     for(auto& bucket : buckets) {
         bucket.close();
     }
