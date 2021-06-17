@@ -62,7 +62,7 @@ public:
         uint8_t buf[64];
         chacha8_get_keystream(&enc_ctx_, index, 1, buf);
 
-        for(uint64_t i = 0; i < 16; ++i)
+        for (uint64_t i = 0; i < 16; ++i)
         {
             const uint64_t x = index * 16 + i;
             const uint64_t y = Util::SliceInt64FromBytes(buf, i * 32, 32);
@@ -224,7 +224,7 @@ public:
         uint16_t idx_R[kBC];
         const int count = find_matches_ex(bucket_L, bucket_R, idx_L, idx_R);
 
-        for(int i = 0; i < count; ++i) {
+        for (int i = 0; i < count; ++i) {
             const auto pos = L_pos_begin + idx_L[i];
             if (pos < (uint64_t(1) << 32)) {
                 match_t<T> match;
@@ -262,7 +262,7 @@ void compute_f1(const uint8_t* id, int num_threads, DS* T1_sort)
             if (!cache) {
                 cache = T1_sort->add_cache();
             }
-            for(auto& entry : input) {
+            for (auto& entry : input) {
                 cache->add(entry);
             }
         },
@@ -275,14 +275,14 @@ void compute_f1(const uint8_t* id, int num_threads, DS* T1_sort)
         {
             out.resize(M * 16);
             F1Calculator F1(id);
-            for(size_t i = 0; i < M; ++i) {
+            for (size_t i = 0; i < M; ++i) {
                 F1.compute_block(block * M + i, &out[i * 16]);
             }
         },
         &output, num_threads, "phase1/F1"
     );
 
-    for(uint64_t k = 0; k < (uint64_t(1) << 28) / M; ++k) {
+    for (uint64_t k = 0; k < (uint64_t(1) << 28) / M; ++k) {
         pool.take_copy(k);
     }
     pool.close();
@@ -317,7 +317,7 @@ uint64_t compute_matches(    int R_index, int num_threads,
             if (!cache) {
                 cache = R_sort->add_cache();
             }
-            for(auto& entry : input) {
+            for (auto& entry : input) {
                 cache->add(entry);
             }
         }, nullptr, std::max(num_threads / 2, 1), "phase1/add");
@@ -331,7 +331,7 @@ uint64_t compute_matches(    int R_index, int num_threads,
         [R_index](std::vector<match_t<T>>& matches, std::vector<S>& out, size_t&) {
             out.reserve(matches.size());
             FxCalculator<T, S> Fx(R_index);
-            for(const auto& match : matches) {
+            for (const auto& match : matches) {
                 S entry;
                 entry.pos = match.pos;
                 entry.off = match.off;
@@ -344,7 +344,7 @@ uint64_t compute_matches(    int R_index, int num_threads,
         [&num_found, &num_written]
          (std::vector<match_input_t>& input, std::vector<match_t<T>>& out, FxMatcher<T>& Fx) {
             out.reserve(64 * 1024);
-            for(const auto& pair : input) {
+            for (const auto& pair : input) {
                 num_found += Fx.find_matches(pair.L_offset[1], *pair.L_bucket[1], *pair.L_bucket[0], out);
             }
             num_written += out.size();
@@ -355,7 +355,7 @@ uint64_t compute_matches(    int R_index, int num_threads,
          (std::pair<std::vector<T>, size_t>& input) {
             std::vector<match_input_t> out;
             out.reserve(1024);
-            for(const auto& entry : input.first) {
+            for (const auto& entry : input.first) {
                 const uint64_t index = entry.y / kBC;
                 if (index < L_index[0]) {
                     throw std::logic_error("input not sorted");
@@ -423,7 +423,7 @@ uint64_t compute_table(    int R_index, int num_threads,
     L_write (
         [L_tmp](std::vector<T>& input)
         {
-            for(const auto& entry : input) {
+            for (const auto& entry : input) {
                 R tmp;
                 tmp.assign(entry);
                 L_tmp->write(tmp);
@@ -436,7 +436,7 @@ uint64_t compute_table(    int R_index, int num_threads,
     R_write (
         [R_tmp](std::vector<S>& input)
         {
-            for(const auto& entry : input) {
+            for (const auto& entry : input) {
                 R_tmp->write(entry);
             }
         },

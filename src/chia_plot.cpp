@@ -91,7 +91,7 @@ phase4::output_t create_plot(    const int num_threads,
     const bls::PrivateKey master_sk = MPL.KeyGen(seed);
 
     bls::PrivateKey local_sk = master_sk;
-    for(uint32_t i : {12381, 8444, 3, 0}) {
+    for (uint32_t i : {12381, 8444, 3, 0}) {
         local_sk = MPL.DeriveChildSk(local_sk, i);
     }
     const bls::G1Element local_key = local_sk.GetG1Element();
@@ -286,7 +286,7 @@ int main(int argc, char** argv)
     {
         // check that we can open required amount of files
         std::vector<std::pair<FILE*, std::string>> files;
-        for(int i = 0; i < num_files_max; ++i) {
+        for (int i = 0; i < num_files_max; ++i) {
             const std::string path = tmp_dir + ".chia_plot_tmp." + std::to_string(i);
             if (auto file = fopen(path.c_str(), "wb")) {
                 files.emplace_back(file, path);
@@ -296,7 +296,7 @@ int main(int argc, char** argv)
                 return -2;
             }
         }
-        for(const auto& entry : files) {
+        for (const auto& entry : files) {
             fclose(entry.first);
             remove(entry.second.c_str());
         }
@@ -322,7 +322,7 @@ int main(int argc, char** argv)
     Thread<std::pair<std::string, std::string>> copy_thread(
         [](std::pair<std::string, std::string>& from_to) {
             const auto total_begin = get_wall_time_micros();
-            while(true) {
+            while (true) {
                 try {
                     const auto bytes = final_copy(from_to.first, from_to.second);
 
@@ -332,12 +332,12 @@ int main(int argc, char** argv)
                     break;
                 } catch(const std::exception& ex) {
                     std::cout << "Copy to " << from_to.second << " failed with: " << ex.what() << std::endl;
-                    std::this_thread::sleep_for(std::chrono::minutes(5));
+                    std::this_thread::sleep_for (std::chrono::minutes(5));
                 }
             }
         }, "final/copy");
 
-    for(int i = 0; i < num_plots || num_plots < 0; ++i)
+    for (int i = 0; i < num_plots || num_plots < 0; ++i)
     {
         if (gracefully_exit) {
             std::cout << std::endl << "Process has been interrupted, waiting for copy/rename operations to finish ..." << std::endl;

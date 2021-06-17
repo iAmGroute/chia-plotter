@@ -31,7 +31,7 @@ uint64_t copy_file(const std::string& src_path, const std::string& dst_path)
     }
     uint64_t total_bytes = 0;
     std::vector<uint8_t> buffer(g_read_chunk_size);
-    while(true) {
+    while (true) {
         const auto num_bytes = fread(buffer.data(), 1, buffer.size(), src);
         if (fwrite(buffer.data(), 1, num_bytes, dst) != num_bytes) {
             throw std::runtime_error("fwrite() failed");

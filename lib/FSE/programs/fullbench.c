@@ -228,7 +228,7 @@ static int local_hist_4_32(void* dst, size_t dstSize, const void* src, size_t sr
 
   (void)dst; (void)dstSize;
 
-  for(; ip32 != ip32end; )
+  for (; ip32 != ip32end; )
   {
     U32 c = cp; ip32++; cp = *ip32;
     c0[(unsigned char)c      ]++;
@@ -257,8 +257,8 @@ static int local_hist_4_32(void* dst, size_t dstSize, const void* src, size_t sr
       #endif
   }
   ip = (const BYTE*)ip32;
-  while(ip < iend) c0[*ip++]++;
-  for(i = 0; i < 256; i++)
+  while (ip < iend) c0[*ip++]++;
+  for (i = 0; i < 256; i++)
     count[i] = c0[i]+c1[i]+c2[i]+c3[i];
 
   return count[0];
@@ -302,9 +302,9 @@ static int local_hist_4_32v2(void* dst, size_t dstSize, const void* src, size_t 
   }
 
   ip = (const BYTE*)ip32;
-  while(ip < iend) c0[*ip++]++;
+  while (ip < iend) c0[*ip++]++;
 
-  for(i = 0; i < 256; i++) c0[i] += c1[i]+c2[i]+c3[i];
+  for (i = 0; i < 256; i++) c0[i] += c1[i]+c2[i]+c3[i];
 
   return c0[0];
 }
@@ -324,7 +324,7 @@ static int local_hist_8_32(void* dst, size_t dstSize, const void* src, size_t sr
 
     (void)dst; (void)dstSize;
 
-    while( ip32 <= ip32end - 4 )
+    while ( ip32 <= ip32end - 4 )
     {
         U32 c = cp,    d = *(++ip32); cp = *(++ip32);
         c0[(unsigned char) c ]++;
@@ -347,8 +347,8 @@ static int local_hist_8_32(void* dst, size_t dstSize, const void* src, size_t sr
     }
 
     ip = (const BYTE*) ip32;
-    while(ip < iend) c0[*ip++]++;
-    for(i = 0; i < 256; i++) c0[i] += c1[i]+c2[i]+c3[i]+c4[i]+c5[i]+c6[i]+c7[i];
+    while (ip < iend) c0[*ip++]++;
+    for (i = 0; i < 256; i++) c0[i] += c1[i]+c2[i]+c3[i]+c4[i]+c5[i]+c6[i]+c7[i];
 
     return c0[0];
 }
@@ -442,7 +442,7 @@ static void histo_by8(U32* counts, const BYTE* rawArray, size_t rawLen)
     const BYTE* const rawEnd = rawArray+rawLen;
     const BYTE* rawEndMul4 = rawArray+(rawLen&~3);
 
-    while(rawPtr < rawEndMul4) {
+    while (rawPtr < rawEndMul4) {
         U64 x = MEM_read64(rawPtr);
         countsArray[0][x & 0xff]++; x >>= 8;
         countsArray[1][x & 0xff]++; x >>= 8;
@@ -456,7 +456,7 @@ static void histo_by8(U32* counts, const BYTE* rawArray, size_t rawLen)
     }
 
     // finish the last few bytes (just throw them into array 0, doesn't matter)
-    while(rawPtr < rawEnd)
+    while (rawPtr < rawEnd)
         countsArray[0][ *rawPtr++ ] ++;
 
     // sum the countsarrays together
@@ -1229,7 +1229,7 @@ int runBench(const void* buffer, size_t blockSize, U32 algNb, U32 nbBenchs)
             size_t resultCode = 0;
 
             clock_t clockStart = clock();
-            while(clock() == clockStart);  /* wait beginning of next tick */
+            while (clock() == clockStart);  /* wait beginning of next tick */
             clockStart = clock();
 
             {   int loopNb;
@@ -1355,7 +1355,7 @@ int main(int argc, const char** argv)
     DISPLAY(WELCOME_MESSAGE);
     if (argc<1) return badusage(exename);
 
-    for(i=1; i<argc; i++) {
+    for (i=1; i<argc; i++) {
         const char* argument = argv[i];
 
         if (!argument) continue;   // Protection if argument empty

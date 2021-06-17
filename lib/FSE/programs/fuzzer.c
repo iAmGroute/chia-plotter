@@ -349,7 +349,7 @@ static void unitTest(void)
             count[2] =  470;
             count[3] =  190;
             count[4] =   90;
-            for(i=5; i<=255; i++) count[i] = 6;
+            for (i=5; i<=255; i++) count[i] = 6;
             for (i=0; i<=255; i++) total += count[i];
             errorCode = FSE_normalizeCount(norm, 10, count, total, 255);
             CHECK(FSE_isError(errorCode), "Error : FSE_normalizeCount() should have worked");
@@ -358,7 +358,7 @@ static void unitTest(void)
             count[2] =  300;
             count[3] =  300;
             count[4] =   50;
-            for(i=5; i<=80; i++) count[i] = 4;
+            for (i=5; i<=80; i++) count[i] = 4;
             total = 0; for (i=0; i<=80; i++) total += count[i];
             errorCode = FSE_normalizeCount(norm, 10, count, total, 80);
             CHECK(FSE_isError(errorCode), "Error : FSE_normalizeCount() should have worked");

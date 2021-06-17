@@ -45,7 +45,7 @@ struct bitfield
 
     void clear()
     {
-        for(int64_t i = 0; i < size_; ++i) {
+        for (int64_t i = 0; i < size_; ++i) {
             buffer_[i] = 0;
         }
     }

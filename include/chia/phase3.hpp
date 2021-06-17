@@ -49,7 +49,7 @@ void compute_stage1(int L_index, int num_threads,
             merge_buffer_t tmp;
             tmp.offset = L_num_read;
             tmp.new_pos.reserve(input.first.size());
-            for(const auto& entry : input.first) {
+            for (const auto& entry : input.first) {
                 tmp.new_pos.push_back(entry.pos);
             }
             L_num_read += tmp.new_pos.size();
@@ -73,7 +73,7 @@ void compute_stage1(int L_index, int num_threads,
             out.first.reserve(input.first.size());
             out.second = input.second;
             size_t offset = 0;
-            for(const auto& entry : input.first) {
+            for (const auto& entry : input.first) {
                 if (!L_used->get(input.second + (offset++))) {
                     continue;    // drop it
                 }
@@ -91,7 +91,7 @@ void compute_stage1(int L_index, int num_threads,
             if (!cache) {
                 cache = R_sort_2->add_cache();
             }
-            for(auto& entry : input) {
+            for (auto& entry : input) {
                 entry_lp tmp;
                 tmp.key = entry.key;
                 tmp.point = Encoding::SquareToLinePoint(entry.pos[0], entry.pos[1]);
@@ -108,7 +108,7 @@ void compute_stage1(int L_index, int num_threads,
         {
             out.reserve(input.first.size());
             uint64_t L_position = 0;
-            for(const auto& entry : input.first) {
+            for (const auto& entry : input.first) {
                 uint64_t pos[2];
                 pos[0] = entry.pos;
                 pos[1] = uint64_t(entry.pos) + entry.off;
@@ -124,7 +124,7 @@ void compute_stage1(int L_index, int num_threads,
                         std::unique_lock<std::mutex> lock(mutex);
                         while (true) {
                             bool do_wait = true;
-                            for(auto& buffer : L_input) {
+                            for (auto& buffer : L_input) {
                                 if (buffer.offset >= L_buffer.offset + L_buffer.new_pos.size()) {
                                     L_buffer.new_pos.insert(L_buffer.new_pos.end(),
                                                             buffer.new_pos.begin(), buffer.new_pos.end());
@@ -359,7 +359,7 @@ uint64_t compute_stage2(int L_index, int num_threads,
                 cache = L_sort->add_cache();
             }
             uint64_t index = input.second;
-            for(const auto& entry : input.first) {
+            for (const auto& entry : input.first) {
                 if (index >= uint64_t(1) << 32) {
                     break;    // skip 32-bit overflow
                 }
@@ -373,7 +373,7 @@ uint64_t compute_stage2(int L_index, int num_threads,
 
     Thread<std::vector<park_out_t>> park_write(
         [plot_file](std::vector<park_out_t>& input) {
-            for(const auto& park : input) {
+            for (const auto& park : input) {
                 fwrite_at(plot_file, park.offset, park.buffer.data(), park.buffer.size());
             }
         }, "phase3/write");
@@ -381,14 +381,14 @@ uint64_t compute_stage2(int L_index, int num_threads,
     ThreadPool<std::vector<park_data_t>, std::vector<park_out_t>> park_threads(
         [L_index, L_final_begin, park_size_bytes, &num_written_final]
          (std::vector<park_data_t>& input, std::vector<park_out_t>& out, size_t&) {
-            for(const auto& park : input) {
+            for (const auto& park : input) {
                 const auto& points = park.points;
                 if (points.empty()) {
                     throw std::logic_error("empty park input");
                 }
                 std::vector<uint8_t> deltas(points.size() - 1);
                 std::vector<uint64_t> stubs(points.size() - 1);
-                for(size_t i = 0; i < points.size() - 1; ++i) {
+                for (size_t i = 0; i < points.size() - 1; ++i) {
                     const auto big_delta = points[i + 1] - points[i];
                     const auto stub = big_delta & ((1ull << (32 - kStubMinusBits)) - 1);
                     const auto small_delta = big_delta >> (32 - kStubMinusBits);
@@ -418,7 +418,7 @@ uint64_t compute_stage2(int L_index, int num_threads,
             std::vector<park_data_t> parks;
             parks.reserve(input.first.size() / kEntriesPerPark + 2);
             uint64_t index = input.second;
-            for(const auto& entry : input.first) {
+            for (const auto& entry : input.first) {
                 if (index >= uint64_t(1) << 32) {
                     break;    // skip 32-bit overflow
                 }
@@ -513,7 +513,7 @@ void compute(    phase2::output_t& input, output_t& out,
             1, num_threads, R_sort_lp.get(), L_sort_np.get(),
             plot_file, final_pointers[1], &final_pointers[2]);
 
-    for(int L_index = 2; L_index < 6; ++L_index)
+    for (int L_index = 2; L_index < 6; ++L_index)
     {
         const std::string R_t = "t" + std::to_string(L_index + 1);
 
@@ -548,7 +548,7 @@ void compute(    phase2::output_t& input, output_t& out,
     num_written_final += num_written_final_7;
 
     fseek_set(plot_file, out.header_size - 10 * 8);
-    for(size_t i = 1; i < final_pointers.size(); ++i) {
+    for (size_t i = 1; i < final_pointers.size(); ++i) {
         uint8_t tmp[8] = {};
         Util::IntToEightBytes(tmp, final_pointers[i]);
         fwrite_ex(plot_file, tmp, sizeof(tmp));

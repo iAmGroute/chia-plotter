@@ -285,7 +285,7 @@ size_t FSE_decompressU16_usingDTable (U16* dst, size_t maxDstSize,
     BIT_initDStream(&bitD, cSrc, cSrcSize);
     FSE_initDState(&state, &bitD, dt);
 
-    while((BIT_reloadDStream(&bitD) < BIT_DStream_completed) && (op<oend)) {
+    while ((BIT_reloadDStream(&bitD) < BIT_DStream_completed) && (op<oend)) {
         *op++ = FSE_decodeSymbolU16(&state, &bitD);
     }
 

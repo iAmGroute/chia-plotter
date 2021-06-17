@@ -98,19 +98,19 @@ uint64_t compute(    FILE* plot_file, const int header_size,
 
     Thread<std::vector<write_data_t>> plot_write(
         [plot_file](std::vector<write_data_t>& input) {
-            for(const auto& write : input) {
+            for (const auto& write : input) {
                 fwrite_at(plot_file, write.offset, write.buffer.data(), write.buffer.size());
             }
         }, "phase4/write");
 
     ThreadPool<std::vector<park_data_t>, std::vector<write_data_t>> p7_threads(
         [P7_park_size](std::vector<park_data_t>& input, std::vector<write_data_t>& out, size_t&) {
-            for(const auto& park : input) {
+            for (const auto& park : input) {
                 write_data_t tmp;
                 tmp.offset = park.offset;
                 tmp.buffer.resize(P7_park_size);
                 ParkBits bits;
-                for(uint64_t new_pos : park.array) {
+                for (uint64_t new_pos : park.array) {
                     bits += ParkBits(new_pos, k + 1);
                 }
                 bits.ToBytes(tmp.buffer.data());
@@ -143,7 +143,7 @@ uint64_t compute(    FILE* plot_file, const int header_size,
         std::vector<park_data_t> parks;
         parks.reserve(input.first.size() / kEntriesPerPark + 2);
         uint64_t index = input.second;
-        for(const auto& entry : input.first) {
+        for (const auto& entry : input.first) {
             const uint64_t entry_y = entry.key;
 
             if (index % kEntriesPerPark == 0 && index > 0)
@@ -218,7 +218,7 @@ uint64_t compute(    FILE* plot_file, const int header_size,
     std::cout << "[P4] Finished writing C1 and C3 tables" << std::endl;
     std::cout << "[P4] Writing C2 table" << std::endl;
 
-    for(const uint64_t C2_entry : C2) {
+    for (const uint64_t C2_entry : C2) {
         Bits(C2_entry, k).ToBytes(C1_entry_buf);
         final_file_writer_1 +=
                 fwrite_at(plot_file, final_file_writer_1, C1_entry_buf, sizeof(C1_entry_buf));

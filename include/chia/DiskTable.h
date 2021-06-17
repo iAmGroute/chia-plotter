@@ -66,7 +66,7 @@ public:
                     std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
             output, num_threads_read, "Table/read");
 
-        for(size_t i = 0; i < pool.num_threads(); ++i)
+        for (size_t i = 0; i < pool.num_threads(); ++i)
         {
             FILE* file = fopen(file_name.c_str(), "rb");
             if (!file) {
@@ -80,7 +80,7 @@ public:
         const size_t left_over = num_entries % block_size;
 
         size_t offset = 0;
-        for(size_t i = 0; i < num_blocks; ++i) {
+        for (size_t i = 0; i < num_blocks; ++i) {
             pool.take_copy(std::make_pair(offset, block_size));
             offset += block_size;
         }
@@ -128,7 +128,7 @@ private:
         }
         auto& entries = out.first;
         entries.resize(param.second);
-        for(size_t k = 0; k < param.second; ++k) {
+        for (size_t k = 0; k < param.second; ++k) {
             entries[k].read(local.buffer + k * T::disk_size);
         }
         out.second = param.first;

@@ -22,7 +22,7 @@ int main(int argc, char** argv)
 
     size_t max_table_size = 0;
     std::array<table_t, 7> input;
-    for(size_t i = 0; i < input.size(); ++i)
+    for (size_t i = 0; i < input.size(); ++i)
     {
         const std::string file_name = "test.p1.table" + std::to_string(i + 1) + ".tmp";
         size_t size = 0;

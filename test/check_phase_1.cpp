@@ -56,11 +56,11 @@ uint32_t gather_7(uint64_t pos, std::vector<uint32_t>& out)
 int main()
 {
     uint8_t id[32] = {};
-    for(size_t i = 0; i < sizeof(id); ++i) {
+    for (size_t i = 0; i < sizeof(id); ++i) {
         id[i] = i + 1;
     }
 
-    for(size_t i = 0; i < table.size(); ++i)
+    for (size_t i = 0; i < table.size(); ++i)
     {
         const std::string file_name = "test.p1.table" + std::to_string(i + 1) + ".tmp";
         size_t size = 0;
@@ -80,14 +80,14 @@ int main()
                 << table[i].num_entries << " entries" << std::endl;
     }
 
-    for(int index = 0; index < 100; ++index)
+    for (int index = 0; index < 100; ++index)
     {
 //        std::cout << std::endl;
         std::vector<uint32_t> proof;
         const auto y = gather_7(1000000000 + index, proof);
 
 //        std::cout << y << " :";
-//        for(auto x : proof) {
+//        for (auto x : proof) {
 //            std::cout << " " << x;
 //        }
 //        std::cout << " (" << proof.size() << " x 32-bit)" << std::endl;
@@ -98,7 +98,7 @@ int main()
         uint8_t proof_bytes[256] = {};
         {
             size_t i = 0;
-            for(auto x : proof) {
+            for (auto x : proof) {
                 chia::Bits(x, 32).ToBytes(proof_bytes + (4 * i++));
             }
         }
