@@ -38,7 +38,11 @@ public:
     class WriteCache {
     public:
         WriteCache(DiskSort* disk, int key_shift, int num_buckets);
-        ~WriteCache() { flush(); }
+        ~WriteCache() {
+            if (disk) std::cout << " - " << disk->path << std::endl;
+            else      std::cout << " - ?"              << std::endl;
+            flush();
+        }
         void add(const T& entry);
         void flush();
     private:
@@ -88,6 +92,7 @@ private:
     const int key_size = 0;
     const int log_num_buckets = 0;
     const int bucket_key_shift = 0;
+    const std::string path;
 
     bool keep_files = false;
     bool is_finished = false;

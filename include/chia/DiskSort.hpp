@@ -60,6 +60,8 @@ template<typename T, typename Key>
 DiskSort<T, Key>::WriteCache::WriteCache(DiskSort* disk, int key_shift, int num_buckets)
     :    disk(disk), key_shift(key_shift), buckets(num_buckets)
 {
+    if (disk) std::cout << " + " << disk->path << std::endl;
+    else      std::cout << " + ?"              << std::endl;
 }
 
 template<typename T, typename Key>
@@ -96,6 +98,7 @@ DiskSort<T, Key>::DiskSort(    int key_size, int log_num_buckets,
     :    key_size(key_size),
         log_num_buckets(log_num_buckets),
         bucket_key_shift(key_size - log_num_buckets),
+        path(path),
         keep_files(read_only),
         is_finished(read_only),
         buckets(1 << log_num_buckets)
@@ -103,6 +106,7 @@ DiskSort<T, Key>::DiskSort(    int key_size, int log_num_buckets,
     for (size_t i = 0; i < buckets.size(); ++i) {
         auto& bucket = buckets[i];
         bucket.file_name = path + std::to_string(i) + "/" + prefix + std::to_string(i) + ".tmp";
+        std::cout << bucket.file_name << std::endl;
         if (read_only) {
             bucket.num_entries = get_file_size(bucket.file_name.c_str()) / T::disk_size;
         } else {

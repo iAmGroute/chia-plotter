@@ -34,6 +34,7 @@ public:
             num_entries(num_entries)
     {
         if (!num_entries) {
+            std::cout << file_name << std::endl;
             file_out = fopen(file_name.c_str(), "xb");
         }
     }

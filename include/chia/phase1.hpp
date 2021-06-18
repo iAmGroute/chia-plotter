@@ -266,7 +266,7 @@ void compute_f1(const uint8_t* id, int num_threads, DS* T1_sort)
                 cache->add(entry);
             }
         },
-        nullptr, std::max(num_threads / 2, 1), "phase1/add"
+        nullptr, std::max(num_threads / 2, 1), "phase1/add" // TODO: change to a few threads only?
     );
 
     ThreadPool<uint64_t, std::vector<entry_1>>
@@ -311,6 +311,8 @@ uint64_t compute_matches(    int R_index, int num_threads,
     };
 
     typedef typename DS_R::WriteCache WriteCache;
+
+    std::cout << "cm0" << std::endl;
 
     ThreadPool<std::vector<S>, size_t, std::shared_ptr<WriteCache>>
     R_add (
@@ -361,10 +363,13 @@ uint64_t compute_matches(    int R_index, int num_threads,
         &eval_pool, num_threads, "phase1/match"
     );
 
+    std::cout << "cm1" << std::endl;
+
     Thread<std::pair<std::vector<T>, size_t>>
     read_thread (
         [&L_index, &L_offset, &L_bucket, &avg_bucket_size, &match_pool, L_tmp_out] (std::pair<std::vector<T>, size_t>& input)
         {
+            std::cout << "r0" << std::endl;
             std::vector<match_input_t> out;
             out.reserve(1024);
             for (const auto& entry : input.first) {
@@ -395,7 +400,9 @@ uint64_t compute_matches(    int R_index, int num_threads,
                 }
                 L_bucket[0]->push_back(entry);
             }
+            std::cout << "r1" << std::endl;
             match_pool.take(out);
+            std::cout << "r2" << std::endl;
             if (L_tmp_out) {
                 L_tmp_out->take(input.first);
             }
@@ -404,10 +411,16 @@ uint64_t compute_matches(    int R_index, int num_threads,
         "phase1/slice"
     );
 
+    std::cout << "cm2" << std::endl;
+
     L_sort->read(&read_thread, std::max(num_threads / 2, 2));
+
+    std::cout << "cm3" << std::endl;
 
     read_thread.close();
     match_pool.close();
+
+    std::cout << "cm4" << std::endl;
 
     if (L_index[1] + 1 == L_index[0]) {
         FxMatcher<T> Fx;
@@ -416,8 +429,13 @@ uint64_t compute_matches(    int R_index, int num_threads,
         num_written += matches.size();
         eval_pool.take(matches);
     }
+
+    std::cout << "cm5" << std::endl;
+
     eval_pool.close();
     R_add.close();
+
+    std::cout << "cm6" << std::endl;
 
     if (R_sort) {
         R_sort->finish();
