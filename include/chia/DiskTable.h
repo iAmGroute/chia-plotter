@@ -34,7 +34,7 @@ public:
             num_entries(num_entries)
     {
         if (!num_entries) {
-            file_out = fopen(file_name.c_str(), "xb");
+            file_out = fopen(file_name.c_str(), "wb");
         }
     }
 
