@@ -26,10 +26,14 @@ private:
     };
 
 public:
-    ThreadPool(    const std::function<void(T&, S&, L&)>& func, Processor<S>* output,
-                const int num_threads, const std::string& name = "")
-        :    output(output),
-            execute(func)
+    ThreadPool(
+        const std::function<void(T&, S&, L&)>& func,
+        Processor<S>*                          output,
+        const int                              num_threads,
+        const std::string&                     name = ""
+    ) :
+        output(output),
+        execute(func)
     {
         if (num_threads < 1) {
             throw std::logic_error("num_threads < 1");
@@ -39,11 +43,15 @@ public:
         }
         for (int i = 0; i < num_threads; ++i) {
             threads[i]->thread = std::make_shared<Thread<T>>(
-                    std::bind(&ThreadPool::wrapper, this,
-                            threads[i].get(),
-                            threads[((i + num_threads) - 1) % num_threads].get(),
-                            std::placeholders::_1),
-                    name.empty() ? name : name + "/" + std::to_string(i));
+                std::bind(
+                    &ThreadPool::wrapper,
+                    this,
+                    threads[i].get(),
+                    threads[((i + num_threads) - 1) % num_threads].get(),
+                    std::placeholders::_1
+                ),
+                name.empty() ? name : name + "/" + std::to_string(i)
+            );
         }
     }
 

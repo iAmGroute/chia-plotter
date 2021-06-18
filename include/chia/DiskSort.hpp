@@ -144,29 +144,46 @@ void DiskSort<T, Key>::read(Processor<std::pair<std::vector<T>, size_t>>* output
         num_threads_read = std::max(num_threads / 2, 2);
     }
 
-    ThreadPool<    std::pair<std::vector<T>, size_t>,
-                std::pair<std::vector<T>, size_t>> sort_pool(
-        [](std::pair<std::vector<T>, size_t>& input, std::pair<std::vector<T>, size_t>& out, size_t&) {
-            std::sort(input.first.begin(), input.first.end(),
+    ThreadPool<std::pair<std::vector<T>, size_t>,
+               std::pair<std::vector<T>, size_t>>
+    sort_pool (
+        [](std::pair<std::vector<T>, size_t>& input, std::pair<std::vector<T>, size_t>& out, size_t&)
+        {
+            std::sort(
+                input.first.begin(),
+                input.first.end(),
                 [](const T& lhs, const T& rhs) -> bool {
                     return Key{}(lhs) < Key{}(rhs);
                 });
             out = std::move(input);
-        }, output, num_threads, "Disk/sort");
+        },
+        output, num_threads, "Disk/sort"
+    );
 
-    Thread<std::vector<std::pair<std::vector<T>, size_t>>> sort_thread(
-        [&sort_pool](std::vector<std::pair<std::vector<T>, size_t>>& input) {
+    Thread<std::vector<std::pair<std::vector<T>, size_t>>>
+    sort_thread (
+        [&sort_pool](std::vector<std::pair<std::vector<T>, size_t>>& input)
+        {
             for (auto& block : input) {
                 sort_pool.take(block);
             }
-        }, "Disk/sort");
+        },
+        "Disk/sort"
+    );
 
-    ThreadPool<    std::pair<size_t, size_t>,
-                std::vector<std::pair<std::vector<T>, size_t>>,
-                read_buffer_t<T>> read_pool(
-        std::bind(&DiskSort::read_bucket, this,
-                std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
-        &sort_thread, num_threads_read, "Disk/read");
+    ThreadPool<std::pair<size_t, size_t>,
+               std::vector<std::pair<std::vector<T>, size_t>>,
+               read_buffer_t<T>>
+    read_pool (
+        std::bind(
+            &DiskSort::read_bucket,
+            this,
+            std::placeholders::_1,
+            std::placeholders::_2,
+            std::placeholders::_3
+        ),
+        &sort_thread, num_threads_read, "Disk/read"
+    );
 
     uint64_t offset = 0;
     for (size_t i = 0; i < buckets.size(); ++i) {
