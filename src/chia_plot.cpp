@@ -19,6 +19,7 @@
 #include <string>
 
 #include <unistd.h>
+#include <sys/resource.h>
 
 inline phase4::output_t create_plot(
     const int              num_threads,
@@ -184,9 +185,10 @@ int main(int argc, char** argv)
     }
 
     {
-        ::rlimit the_limit;
-        the_limit.rlim_cur = 5000;
-        the_limit.rlim_max = 5000;
+        struct rlimit the_limit = {
+            .rlim_cur = 5000,
+            .rlim_max = 5000
+        };
         if (setrlimit(RLIMIT_NOFILE, &the_limit)) {
             std::cout << "Warning: setrlimit() failed!" << std::endl;
         }
