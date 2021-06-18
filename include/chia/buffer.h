@@ -11,9 +11,11 @@
 #include <chia/settings.h>
 
 
-template<typename T, size_t capacity>
+template<typename T, size_t _capacity>
 struct byte_buffer_t
 {
+    static constexpr size_t capacity   = _capacity;
+    static constexpr size_t entry_size = T::disk_size;
     uint8_t data[capacity * entry_size];
     size_t  count = 0;
 
@@ -23,10 +25,10 @@ struct byte_buffer_t
 };
 
 template<typename T>
-typedef byte_buffer_t<T,  g_read_chunk_size> read_buffer_t;
+using  read_buffer_t = byte_buffer_t<T,  g_read_chunk_size>;
 
 template<typename T>
-typedef byte_buffer_t<T, g_write_chunk_size> write_buffer_t;
+using write_buffer_t = byte_buffer_t<T, g_write_chunk_size>;
 
 
 #endif /* INCLUDE_CHIA_BUFFER_H_ */
