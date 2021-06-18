@@ -483,7 +483,7 @@ inline void compute(
     const std::string prefix = plot_name + "_p3_";
 
     out.params = input.params;
-    out.plot_file_name = path+"f/"+plot_name+".plot.tmp";
+    out.plot_file_name = tmp_dir+"f/"+plot_name+".plot.tmp";
 
     FILE* plot_file = fopen(out.plot_file_name.c_str(), "xb");
     if (!plot_file) {
