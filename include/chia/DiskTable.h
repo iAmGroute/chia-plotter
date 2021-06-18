@@ -35,7 +35,10 @@ public:
     {
         if (!num_entries) {
             std::cout << file_name << std::endl;
-            file_out = fopen(file_name.c_str(), "xb");
+            file_out = fopen(file_name.c_str(), "wb");
+            if (!file_out) {
+                throw std::runtime_error("fopen() failed");
+            }
         }
     }
 

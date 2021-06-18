@@ -485,7 +485,7 @@ inline void compute(
     out.params = input.params;
     out.plot_file_name = tmp_dir+"f/"+plot_name+".plot.tmp";
 
-    FILE* plot_file = fopen(out.plot_file_name.c_str(), "xb");
+    FILE* plot_file = fopen(out.plot_file_name.c_str(), "wb");
     if (!plot_file) {
         throw std::runtime_error("fopen() failed");
     }
