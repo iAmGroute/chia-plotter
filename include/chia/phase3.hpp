@@ -470,7 +470,7 @@ uint64_t compute_stage2(int L_index, int num_threads,
 }
 
 inline void compute(
-    const phase2::output_t& input,
+          phase2::output_t& input,
                   output_t& out,
     const int               num_threads,
     const int               log_num_buckets,
