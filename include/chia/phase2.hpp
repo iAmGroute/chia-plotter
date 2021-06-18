@@ -144,7 +144,7 @@ inline void compute(
     auto curr_bitfield = std::make_shared<bitfield>(max_table_size);
     auto next_bitfield = std::make_shared<bitfield>(max_table_size);
 
-    DiskTable<entry_7> table_7(path+"t7/f/"+prefix+"t7.tmp");
+    DiskTable<entry_7> table_7(path+"t7f/"+prefix+"t7f.tmp");
 
     compute_table<entry_7, entry_7, DiskSort7>(
             7, num_threads, nullptr, &table_7, input.table[6], next_bitfield.get(), nullptr);
