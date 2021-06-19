@@ -19,9 +19,8 @@
 template<typename T, typename Key>
 void DiskSort<T, Key>::bucket_t::open(const char* mode)
 {
-    if (file) {
-        fclose(file);
-    }
+    close();
+    std::cout << mode[0] << " " << file_name << std::endl;
     file = fopen(file_name.c_str(), mode);
     if (!file) {
         throw std::runtime_error("fopen() failed");
@@ -44,6 +43,7 @@ template<typename T, typename Key>
 void DiskSort<T, Key>::bucket_t::close()
 {
     if (file) {
+        std::cout << "c " << file_name << std::endl;
         fclose(file);
         file = nullptr;
     }
@@ -106,7 +106,6 @@ DiskSort<T, Key>::DiskSort(    int key_size, int log_num_buckets,
     for (size_t i = 0; i < buckets.size(); ++i) {
         auto& bucket = buckets[i];
         bucket.file_name = path + std::to_string(i) + "/" + prefix + std::to_string(i) + ".tmp";
-        std::cout << bucket.file_name << std::endl;
         if (read_only) {
             bucket.num_entries = get_file_size(bucket.file_name.c_str()) / T::disk_size;
         } else {

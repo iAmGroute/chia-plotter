@@ -19,9 +19,11 @@ class DiskTable {
 private:
     struct local_t {
         FILE*       file   = nullptr;
+        std::string fname  = "";
         uint8_t*    buffer = nullptr;
         ~local_t() {
             if (file) {
+                std::cout << "c " << fname << std::endl;
                 fclose(file);
             }
             delete [] buffer;
@@ -34,7 +36,7 @@ public:
             num_entries(num_entries)
     {
         if (!num_entries) {
-            std::cout << file_name << std::endl;
+            std::cout << "w " << file_name << std::endl;
             file_out = fopen(file_name.c_str(), "wb");
             if (!file_out) {
                 throw std::runtime_error("fopen() failed");
@@ -80,12 +82,14 @@ public:
 
         for (size_t i = 0; i < pool.num_threads(); ++i)
         {
+            std::cout << "r " << file_name << std::endl;
             FILE* file = fopen(file_name.c_str(), "rb");
             if (!file) {
                 throw std::runtime_error("fopen() failed");
             }
             auto& local  = pool.get_local(i);
             local.file   = file;
+            local.fname  = file_name;
             local.buffer = new uint8_t[block_size * T::disk_size];
         }
         const size_t num_blocks = num_entries / block_size;
@@ -122,6 +126,7 @@ public:
     void close() {
         if (file_out) {
             flush();
+            std::cout << "c " << file_name << std::endl;
             fclose(file_out);
             file_out = nullptr;
         }
