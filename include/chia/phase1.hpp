@@ -369,7 +369,6 @@ uint64_t compute_matches(    int R_index, int num_threads,
     read_thread (
         [&L_index, &L_offset, &L_bucket, &avg_bucket_size, &match_pool, L_tmp_out] (std::pair<std::vector<T>, size_t>& input)
         {
-            std::cout << "r0" << std::endl;
             std::vector<match_input_t> out;
             out.reserve(1024);
             for (const auto& entry : input.first) {
@@ -400,13 +399,10 @@ uint64_t compute_matches(    int R_index, int num_threads,
                 }
                 L_bucket[0]->push_back(entry);
             }
-            std::cout << "r1" << std::endl;
             match_pool.take(out);
-            std::cout << "r2" << std::endl;
             if (L_tmp_out) {
                 L_tmp_out->take(input.first);
             }
-            std::cout << "r3" << std::endl;
         },
         "phase1/slice"
     );
