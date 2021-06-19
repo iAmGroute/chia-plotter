@@ -485,6 +485,7 @@ inline void compute(
     out.params = input.params;
     out.plot_file_name = tmp_dir+"f/"+plot_name+".plot.tmp";
 
+    std::cout << "w " << out.plot_file_name << std::endl;
     FILE* plot_file = fopen(out.plot_file_name.c_str(), "wb");
     if (!plot_file) {
         throw std::runtime_error("fopen() failed");
@@ -555,6 +556,7 @@ inline void compute(
         Util::IntToEightBytes(tmp, final_pointers[i]);
         fwrite_ex(plot_file, tmp, sizeof(tmp));
     }
+    std::cout << "c " << out.plot_file_name << std::endl;
     fclose(plot_file);
 
     out.sort_7 = L_sort_np;

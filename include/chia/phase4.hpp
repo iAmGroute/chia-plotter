@@ -251,6 +251,7 @@ inline void compute(
 ) {
     const auto total_begin = get_wall_time_micros();
 
+    std::cout << "R " << input.plot_file_name << std::endl;
     FILE* plot_file = fopen(input.plot_file_name.c_str(), "rb+");
     if (!plot_file) {
         throw std::runtime_error("fopen() failed");
@@ -259,11 +260,13 @@ inline void compute(
     out.plot_size = compute(plot_file, input.header_size, input.sort_7.get(),
                             num_threads, input.final_pointer_7, input.num_written_7);
 
+    std::cout << "c " << input.plot_file_name << std::endl;
     fclose(plot_file);
 
     out.params = input.params;
     out.plot_file_name = tmp_dir+"f/"+plot_name+".plot";
 
+    std::cout << "mv " << input.plot_file_name << out.plot_file_name << std::endl;
     std::rename(input.plot_file_name.c_str(), out.plot_file_name.c_str());
 
     std::cout << "Phase 4 took " << (get_wall_time_micros() - total_begin) / 1e6 << " sec"
