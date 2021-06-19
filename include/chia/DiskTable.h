@@ -18,8 +18,8 @@ template<typename T>
 class DiskTable {
 private:
     struct local_t {
-        FILE* file = nullptr;
-        uint8_t* buffer = nullptr;
+        FILE*       file   = nullptr;
+        uint8_t*    buffer = nullptr;
         ~local_t() {
             if (file) {
                 fclose(file);
@@ -61,14 +61,22 @@ public:
         return out;
     }
 
-    void read(    Processor<std::pair<std::vector<T>, size_t>>* output,
-                int num_threads_read = 2,
-                const size_t block_size = g_read_chunk_size) const
-    {
-        ThreadPool<std::pair<size_t, size_t>, std::pair<std::vector<T>, size_t>, local_t> pool(
-            std::bind(&DiskTable::read_block, this,
-                    std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
-            output, num_threads_read, "Table/read");
+    void read(
+        Processor<std::pair<std::vector<T>, size_t>>* output,
+        int                                           num_threads_read = 2,
+        const size_t                                  block_size       = g_read_chunk_size
+    ) const {
+        ThreadPool<std::pair<size_t, size_t>, std::pair<std::vector<T>, size_t>, local_t>
+        pool (
+            std::bind(
+                &DiskTable::read_block,
+                this,
+                std::placeholders::_1,
+                std::placeholders::_2,
+                std::placeholders::_3
+            ),
+            output, num_threads_read, "Table/read"
+        );
 
         for (size_t i = 0; i < pool.num_threads(); ++i)
         {
@@ -76,8 +84,8 @@ public:
             if (!file) {
                 throw std::runtime_error("fopen() failed");
             }
-            auto& local = pool.get_local(i);
-            local.file = file;
+            auto& local  = pool.get_local(i);
+            local.file   = file;
             local.buffer = new uint8_t[block_size * T::disk_size];
         }
         const size_t num_blocks = num_entries / block_size;
