@@ -1,10 +1,6 @@
-#!/bin/bash
+#!/bin/bash -xe
 
 mkdir -p build
-
 cd build
-
-cmake -D CMAKE_CXX_FLAGS="-O3 -fmax-errors=1" -DARITH="easy" -DBUILD_BLS_PYTHON_BINDINGS=false ..
-
-make -j8 $@
-
+cmake .. -DCMAKE_CXX_FLAGS="-O3 -march=native -mtune=native -ffast-math" -DARITH="easy" -DBUILD_BLS_PYTHON_BINDINGS=false
+cmake --build . --config Release -- -j4
