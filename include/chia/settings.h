@@ -11,10 +11,10 @@
 #include <cstdint>
 #include <cstddef>
 
-constexpr size_t  g_read_chunk_size = 65536; // Number of table entries to read at once
-constexpr size_t g_write_chunk_size = 32768; // Number of table entries to buffer before writing to disk
 // SIZE is in # of entries
 
+constexpr size_t  g_read_chunk_size = 256 * 1024; // Number of table entries to read at once (per read thread)
+constexpr size_t g_write_chunk_size =  32 * 1024; // Number of table entries to buffer before write (per bucket)
 
 //
 
