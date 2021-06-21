@@ -18,19 +18,22 @@
 namespace phase2 {
 
 template<typename T, typename S, typename DS>
-                    DS* R_sort, DiskTable<S>* R_file,
-                    const table_t& R_table,
-                    bitfield* L_used,
-                    const bitfield* R_used)
-{
 void compute_table(
     int             R_index,
+    DS*             R_sort,
+    DiskTable<S>*   R_file,
+    const table_t&  R_table,
+    bitfield*       L_used,
+    const bitfield* R_used
+) {
     DiskTable<T> R_input(R_table);
     {
         const auto begin = get_wall_time_micros();
 
-        ThreadPool<std::pair<std::vector<T>, size_t>, size_t> pool(
-            [L_used, R_used](std::pair<std::vector<T>, size_t>& input, size_t&, size_t&) {
+        ThreadPool<std::pair<std::vector<T>, size_t>, size_t>
+        pool (
+            [L_used, R_used](std::pair<std::vector<T>, size_t>& input, size_t&, size_t&)
+            {
                 uint64_t offset = 0;
                 for (const auto& entry : input.first) {
                     if (R_used && !R_used->get(input.second + (offset++))) {
@@ -57,15 +60,20 @@ void compute_table(
 
     typedef typename DS::WriteCache WriteCache;
 
-    Thread<std::vector<S>> R_write(
-        [R_file](std::vector<S>& input) {
+    Thread<std::vector<S>> R_write (
+        [R_file](std::vector<S>& input)
+        {
             for (auto& entry : input) {
                 R_file->write(entry);
             }
-        }, "phase2/write");
+        },
+        "phase2/write"
+    );
 
-    ThreadPool<std::vector<S>, size_t, std::shared_ptr<WriteCache>> R_add(
-        [R_sort](std::vector<S>& input, size_t&, std::shared_ptr<WriteCache>& cache) {
+    ThreadPool<std::vector<S>, size_t, std::shared_ptr<WriteCache>>
+    R_add (
+        [R_sort](std::vector<S>& input, size_t&, std::shared_ptr<WriteCache>& cache)
+        {
             if (!cache) {
                 cache = R_sort->add_cache();
             }
@@ -81,16 +89,21 @@ void compute_table(
         R_out = &R_write;
     }
 
-    Thread<std::vector<S>> R_count(
-        [R_out, &num_written](std::vector<S>& input) {
+    Thread<std::vector<S>> R_count (
+        [R_out, &num_written](std::vector<S>& input)
+        {
             for (auto& entry : input) {
                 set_sort_key<S>{}(entry, num_written++);
             }
             R_out->take(input);
-        }, "phase2/count");
+        },
+        "phase2/count"
+    );
 
-    ThreadPool<std::pair<std::vector<T>, size_t>, std::vector<S>> map_pool(
-        [&index, R_used](std::pair<std::vector<T>, size_t>& input, std::vector<S>& out, size_t&) {
+    ThreadPool<std::pair<std::vector<T>, size_t>, std::vector<S>>
+    map_pool (
+        [&index, R_used](std::pair<std::vector<T>, size_t>& input, std::vector<S>& out, size_t&)
+        {
             out.reserve(input.first.size());
             uint64_t offset = 0;
             for (const auto& entry : input.first) {

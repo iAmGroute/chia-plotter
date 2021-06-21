@@ -361,8 +361,7 @@ uint64_t compute_matches(    int R_index,
         &eval_pool, G_P1_MATCH_THREADS, "phase1/match"
     );
 
-    Thread<std::pair<std::vector<T>, size_t>>
-    read_thread (
+    Thread<std::pair<std::vector<T>, size_t>> read_thread (
         [&L_index, &L_offset, &L_bucket, &avg_bucket_size, &match_pool, L_tmp_out] (std::pair<std::vector<T>, size_t>& input)
         {
             std::vector<match_input_t> out;

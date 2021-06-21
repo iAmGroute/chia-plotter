@@ -96,15 +96,20 @@ uint64_t compute(    FILE* plot_file, const int header_size,
         std::vector<uint8_t> buffer;
     };
 
-    Thread<std::vector<write_data_t>> plot_write(
-        [plot_file](std::vector<write_data_t>& input) {
+    Thread<std::vector<write_data_t>> plot_write (
+        [plot_file](std::vector<write_data_t>& input)
+        {
             for (const auto& write : input) {
                 fwrite_at(plot_file, write.offset, write.buffer.data(), write.buffer.size());
             }
-        }, "phase4/write");
+        },
+        "phase4/write"
+    );
 
-    ThreadPool<std::vector<park_data_t>, std::vector<write_data_t>> p7_threads(
-        [P7_park_size](std::vector<park_data_t>& input, std::vector<write_data_t>& out, size_t&) {
+    ThreadPool<std::vector<park_data_t>, std::vector<write_data_t>>
+    p7_threads (
+        [P7_park_size](std::vector<park_data_t>& input, std::vector<write_data_t>& out, size_t&)
+        {
             for (const auto& park : input) {
                 write_data_t tmp;
                 tmp.offset = park.offset;
@@ -141,60 +146,65 @@ uint64_t compute(    FILE* plot_file, const int header_size,
 
     // We read each table7 entry, which is sorted by f7, but we don't need f7 anymore. Instead,
     // we will just store pos6, and the deltas in table C3, and checkpoints in tables C1 and C2.
-    Thread<std::pair<std::vector<phase3::entry_np>, size_t>> read_thread(
-    [begin_byte_C3, C3_size, P7_park_size, &num_C1_entries, &prev_y, &C2,
-     &park_deltas, &park_data, &park_threads, &p7_threads, &plot_write,
-     &final_file_writer_1, &final_file_writer_3]
-     (std::pair<std::vector<phase3::entry_np>, size_t>& input) {
-        std::vector<park_data_t> parks;
-        parks.reserve(input.first.size() / kEntriesPerPark + 2);
-        uint64_t index = input.second;
-        for (const auto& entry : input.first) {
-            const uint64_t entry_y = entry.key;
+    Thread<std::pair<std::vector<phase3::entry_np>, size_t>> read_thread (
+        [
+            begin_byte_C3, C3_size, P7_park_size, &num_C1_entries, &prev_y, &C2,
+            &park_deltas, &park_data, &park_threads, &p7_threads, &plot_write,
+            &final_file_writer_1, &final_file_writer_3
+        ]
+        (std::pair<std::vector<phase3::entry_np>, size_t>& input)
+        {
+            std::vector<park_data_t> parks;
+            parks.reserve(input.first.size() / kEntriesPerPark + 2);
+            uint64_t index = input.second;
+            for (const auto& entry : input.first) {
+                const uint64_t entry_y = entry.key;
 
-            if (index % kEntriesPerPark == 0 && index > 0)
-            {
-                park_data.offset = final_file_writer_3;
-                final_file_writer_3 += P7_park_size;
-
-                parks.emplace_back(std::move(park_data));
-
-                park_data.array.clear();
-                park_data.array.reserve(kEntriesPerPark);
-            }
-            park_data.array.push_back(entry.pos);
-
-            if (index % kCheckpoint1Interval == 0)
-            {
-                write_data_t out;
-                out.offset = final_file_writer_1;
-                out.buffer.resize(4);
-                Bits(entry_y, k).ToBytes(out.buffer.data());
-                final_file_writer_1 += out.buffer.size();
+                if (index % kEntriesPerPark == 0 && index > 0)
                 {
-                    std::vector<write_data_t> out_;
-                    out_.emplace_back(std::move(out));
-                    plot_write.take(out_);
+                    park_data.offset = final_file_writer_3;
+                    final_file_writer_3 += P7_park_size;
+
+                    parks.emplace_back(std::move(park_data));
+
+                    park_data.array.clear();
+                    park_data.array.reserve(kEntriesPerPark);
                 }
-                if (num_C1_entries > 0) {
-                    park_deltas.offset = begin_byte_C3 + (num_C1_entries - 1) * C3_size;
-                    park_threads.take(park_deltas);
+                park_data.array.push_back(entry.pos);
+
+                if (index % kCheckpoint1Interval == 0)
+                {
+                    write_data_t out;
+                    out.offset = final_file_writer_1;
+                    out.buffer.resize(4);
+                    Bits(entry_y, k).ToBytes(out.buffer.data());
+                    final_file_writer_1 += out.buffer.size();
+                    {
+                        std::vector<write_data_t> out_;
+                        out_.emplace_back(std::move(out));
+                        plot_write.take(out_);
+                    }
+                    if (num_C1_entries > 0) {
+                        park_deltas.offset = begin_byte_C3 + (num_C1_entries - 1) * C3_size;
+                        park_threads.take(park_deltas);
+                    }
+                    if (index % (kCheckpoint1Interval * kCheckpoint2Interval) == 0) {
+                        C2.push_back(entry_y);
+                    }
+                    park_deltas.deltas.clear();
+                    park_deltas.deltas.reserve(kCheckpoint1Interval);
+                    num_C1_entries++;
                 }
-                if (index % (kCheckpoint1Interval * kCheckpoint2Interval) == 0) {
-                    C2.push_back(entry_y);
+                else {
+                    park_deltas.deltas.push_back(entry_y - prev_y);
                 }
-                park_deltas.deltas.clear();
-                park_deltas.deltas.reserve(kCheckpoint1Interval);
-                num_C1_entries++;
+                prev_y = entry_y;
+                index++;
             }
-            else {
-                park_deltas.deltas.push_back(entry_y - prev_y);
-            }
-            prev_y = entry_y;
-            index++;
-        }
-        p7_threads.take(parks);
-    }, "phase4/read");
+            p7_threads.take(parks);
+        },
+        "phase4/read"
+    );
 
     L_sort_7->read(&read_thread, G_P4_P3S2_SORT_THREADS, G_P4_P3S2_READ_THREADS);
     read_thread.close();

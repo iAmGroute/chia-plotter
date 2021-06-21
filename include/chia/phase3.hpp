@@ -42,9 +42,11 @@ void compute_stage1(int L_index,
     std::list<merge_buffer_t> L_input;            // double buffer
     std::atomic<uint64_t> R_num_write {0};
 
-    Thread<std::pair<std::vector<entry_np>, size_t>> L_read(
-         (std::pair<std::vector<entry_np>, size_t>& input) {
+    Thread<std::pair<std::vector<entry_np>, size_t>>
+    L_read (
         [&mutex, &signal, &signal_1, &L_input, &L_num_read, &R_is_end]
+        (std::pair<std::vector<entry_np>, size_t>& input)
+        {
             merge_buffer_t tmp;
             tmp.offset = L_num_read;
             tmp.new_pos.reserve(input.first.size());
@@ -63,12 +65,16 @@ void compute_stage1(int L_index,
             L_input.emplace_back(std::move(tmp));
             lock.unlock();
             signal.notify_all();
-        }, "phase3/buffer");
+        },
+        "phase3/buffer"
+    );
 
-    ThreadPool<std::pair<std::vector<T>, size_t>, std::pair<std::vector<entry_np>, size_t>> L_read_1(
-        [L_used](std::pair<std::vector<T>, size_t>& input,
-                 std::pair<std::vector<entry_np>, size_t>& out, size_t&)
-        {
+    ThreadPool<std::pair<std::vector<T>, size_t>, std::pair<std::vector<entry_np>, size_t>>
+    L_read_1 (
+        [L_used](
+            std::pair<std::vector<T>, size_t>& input,
+            std::pair<std::vector<entry_np>, size_t>& out, size_t&
+        ) {
             out.first.reserve(input.first.size());
             out.second = input.second;
             size_t offset = 0;
@@ -86,9 +92,10 @@ void compute_stage1(int L_index,
 
     typedef DiskSortLP::WriteCache WriteCache;
 
-    ThreadPool<std::vector<entry_kpp>, size_t, std::shared_ptr<WriteCache>> R_add_2(
-        [R_sort_2, &R_num_write]
-         (std::vector<entry_kpp>& input, size_t&, std::shared_ptr<WriteCache>& cache) {
+    ThreadPool<std::vector<entry_kpp>, size_t, std::shared_ptr<WriteCache>>
+    R_add_2 (
+        [R_sort_2, &R_num_write](std::vector<entry_kpp>& input, size_t&, std::shared_ptr<WriteCache>& cache)
+        {
             if (!cache) {
                 cache = R_sort_2->add_cache();
             }
@@ -103,12 +110,13 @@ void compute_stage1(int L_index,
         nullptr, G_P3S1_P3S1_WRITE_THREADS, "phase3/add"
     );
 
-    ThreadPool<std::pair<std::vector<S>, size_t>, std::vector<entry_kpp>, merge_buffer_t> R_read(
-        [&mutex, &signal, &signal_1, &L_input, &L_is_end] (
+    ThreadPool<std::pair<std::vector<S>, size_t>, std::vector<entry_kpp>, merge_buffer_t>
+    R_read (
+        [&mutex, &signal, &signal_1, &L_input, &L_is_end](
             std::pair<std::vector<S>, size_t>& input,
             std::vector<entry_kpp>& out,
-            merge_buffer_t& L_buffer)
-        {
+            merge_buffer_t& L_buffer
+        ) {
             out.reserve(input.first.size());
             uint64_t L_position = 0;
             for (const auto& entry : input.first) {
@@ -168,7 +176,7 @@ void compute_stage1(int L_index,
         &R_add_2, G_P3S1_MERGE_THREADS, "phase3/merge"
     );
 
-    std::thread R_sort_read(
+    std::thread R_sort_read (
         [&mutex, &signal_1, R_sort, R_table, &R_read, &R_is_end]()
         {
             if (R_table) {
@@ -182,7 +190,8 @@ void compute_stage1(int L_index,
                 R_is_end = true;
                 signal_1.notify_all();
             }
-        });
+        }
+    );
 
     if (L_table) {
         L_table->read(&L_read_1, G_P3S1_P1T1F_READ_THREADS, G_P3S1_P1T1F_READ_SIZE);
@@ -358,9 +367,11 @@ uint64_t compute_stage2(int L_index,
 
     typedef DiskSortNP::WriteCache WriteCache;
 
-    ThreadPool<std::pair<std::vector<entry_lp>, size_t>, size_t, std::shared_ptr<WriteCache>> L_add(
+    ThreadPool<std::pair<std::vector<entry_lp>, size_t>, size_t, std::shared_ptr<WriteCache>>
+    L_add (
         [L_sort, &L_num_write]
-         (std::pair<std::vector<entry_lp>, size_t>& input, size_t&, std::shared_ptr<WriteCache>& cache) {
+        (std::pair<std::vector<entry_lp>, size_t>& input, size_t&, std::shared_ptr<WriteCache>& cache)
+        {
             if (!cache) {
                 cache = L_sort->add_cache();
             }
@@ -379,16 +390,21 @@ uint64_t compute_stage2(int L_index,
         nullptr, G_P3S2_P3S2_WRITE_THREADS, "phase3/add"
     );
 
-    Thread<std::vector<park_out_t>> park_write(
-        [plot_file](std::vector<park_out_t>& input) {
+    Thread<std::vector<park_out_t>> park_write (
+        [plot_file](std::vector<park_out_t>& input)
+        {
             for (const auto& park : input) {
                 fwrite_at(plot_file, park.offset, park.buffer.data(), park.buffer.size());
             }
-        }, "phase3/write");
+        },
+        "phase3/write"
+    );
 
-    ThreadPool<std::vector<park_data_t>, std::vector<park_out_t>> park_threads(
+    ThreadPool<std::vector<park_data_t>, std::vector<park_out_t>>
+    park_threads (
         [L_index, L_final_begin, park_size_bytes, &num_written_final]
-         (std::vector<park_data_t>& input, std::vector<park_out_t>& out, size_t&) {
+        (std::vector<park_data_t>& input, std::vector<park_out_t>& out, size_t&)
+        {
             for (const auto& park : input) {
                 const auto& points = park.points;
                 if (points.empty()) {
@@ -423,8 +439,9 @@ uint64_t compute_stage2(int L_index,
         &park_write, G_P3S2_F_PARK_THREADS, "phase3/park"
     );
 
-    Thread<std::pair<std::vector<entry_lp>, size_t>> R_read(
-        [&R_num_read, &L_add, &park, &park_threads](std::pair<std::vector<entry_lp>, size_t>& input) {
+    Thread<std::pair<std::vector<entry_lp>, size_t>> R_read (
+        [&R_num_read, &L_add, &park, &park_threads](std::pair<std::vector<entry_lp>, size_t>& input)
+        {
             std::vector<park_data_t> parks;
             parks.reserve(input.first.size() / kEntriesPerPark + 2);
             uint64_t index = input.second;
@@ -447,7 +464,9 @@ uint64_t compute_stage2(int L_index,
             R_num_read += input.first.size();
             park_threads.take(parks);
             L_add.take(input);
-        }, "phase3/slice");
+        },
+        "phase3/slice"
+    );
 
     R_sort->read(&R_read, G_P3S2_P3S1_SORT_THREADS, G_P3S2_P3S1_READ_THREADS);
     R_read.close();
