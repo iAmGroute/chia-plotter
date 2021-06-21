@@ -28,8 +28,8 @@ constexpr int G_P1T1_CALC_THREADS       = 24; // tot
 constexpr int G_P1T1_P1T1_WRITE_THREADS = 12; // tot  / 2
 
 
-constexpr int G_P1_P1_SORT_THREADS      = 24; // tot (og tot/2)
-constexpr int G_P1_P1_READ_THREADS      = 12; // sort / 2
+constexpr int G_P1_P1_SORT_THREADS      = 12; // tot  / 2
+constexpr int G_P1_P1_READ_THREADS      = 12; // sort (og sort/2)
 
 constexpr int G_P1_MATCH_THREADS        = 24; // tot
 constexpr int G_P1_EVAL_THREADS         = 24; // tot
