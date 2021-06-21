@@ -39,7 +39,7 @@ public:
             std::cout << "w " << file_name << std::endl;
             file_out = fopen(file_name.c_str(), "wb");
             if (!file_out) {
-                throw std::runtime_error("fopen() failed");
+                throw std::runtime_error("fopen() failed " + file_name);
             }
         }
     }
@@ -85,7 +85,7 @@ public:
             std::cout << "r " << file_name << std::endl;
             FILE* file = fopen(file_name.c_str(), "rb");
             if (!file) {
-                throw std::runtime_error("fopen() failed");
+                throw std::runtime_error("fopen() failed " + file_name);
             }
             auto& local  = pool.get_local(i);
             local.file   = file;

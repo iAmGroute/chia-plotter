@@ -254,7 +254,7 @@ inline void compute(
     std::cout << "R " << input.plot_file_name << std::endl;
     FILE* plot_file = fopen(input.plot_file_name.c_str(), "rb+");
     if (!plot_file) {
-        throw std::runtime_error("fopen() failed");
+        throw std::runtime_error("fopen() failed " + input.plot_file_name);
     }
 
     out.plot_size = compute(plot_file, input.header_size, input.sort_7.get(),

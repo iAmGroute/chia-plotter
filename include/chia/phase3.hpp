@@ -488,7 +488,7 @@ inline void compute(
     std::cout << "w " << out.plot_file_name << std::endl;
     FILE* plot_file = fopen(out.plot_file_name.c_str(), "wb");
     if (!plot_file) {
-        throw std::runtime_error("fopen() failed");
+        throw std::runtime_error("fopen() failed " + out.plot_file_name);
     }
     out.header_size = WriteHeader(    plot_file, 32, input.params.id.data(),
                                     input.params.memo.data(), input.params.memo.size());
