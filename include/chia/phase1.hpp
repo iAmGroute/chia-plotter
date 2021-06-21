@@ -312,8 +312,6 @@ uint64_t compute_matches(    int R_index, int num_threads,
 
     typedef typename DS_R::WriteCache WriteCache;
 
-    std::cout << "cm0" << std::endl;
-
     ThreadPool<std::vector<S>, size_t, std::shared_ptr<WriteCache>>
     R_add (
         [R_sort](std::vector<S>& input, size_t&, std::shared_ptr<WriteCache>& cache)
@@ -416,8 +414,6 @@ uint64_t compute_matches(    int R_index, int num_threads,
     read_thread.close();
     match_pool.close();
 
-    std::cout << "cm4" << std::endl;
-
     if (L_index[1] + 1 == L_index[0]) {
         FxMatcher<T> Fx;
         std::vector<match_t<T>> matches;
@@ -426,12 +422,8 @@ uint64_t compute_matches(    int R_index, int num_threads,
         eval_pool.take(matches);
     }
 
-    std::cout << "cm5" << std::endl;
-
     eval_pool.close();
     R_add.close();
-
-    std::cout << "cm6" << std::endl;
 
     if (R_sort) {
         R_sort->finish();

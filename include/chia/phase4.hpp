@@ -266,7 +266,7 @@ inline void compute(
     out.params = input.params;
     out.plot_file_name = tmp_dir+"f/"+plot_name+".plot";
 
-    std::cout << "mv " << input.plot_file_name << out.plot_file_name << std::endl;
+    std::cout << "mv " << input.plot_file_name << " " << out.plot_file_name << std::endl;
     std::rename(input.plot_file_name.c_str(), out.plot_file_name.c_str());
 
     std::cout << "Phase 4 took " << (get_wall_time_micros() - total_begin) / 1e6 << " sec"
