@@ -11,10 +11,10 @@
 #include <cstdint>
 #include <cstddef>
 
-// SIZE is in # of entries
+// SIZE is in bytes
 
-constexpr size_t  g_read_chunk_size = 256 * 1024; // Number of table entries to read at once (per read thread)
-constexpr size_t g_write_chunk_size =  32 * 1024; // Number of table entries to buffer before write (per bucket)
+constexpr size_t  G_READ_CHUNK_SIZE = 2 * 1024 * 1024; // Bytes of table entries to read at once (per read thread)
+constexpr size_t G_WRITE_CHUNK_SIZE =      256 * 1024; // Bytes of table entries to buffer before write (per bucket)
 
 //
 
@@ -38,7 +38,7 @@ constexpr int G_P1_P1_WRITE_THREADS     = 12; // tot  / 2
 
 
 constexpr int G_P2_P1F_READ_THREADS     =  2; // 2 (og tot/4)
-constexpr int G_P2_P1F_READ_SIZE        = 1024 * 1024;
+constexpr int G_P2_P1F_READ_SIZE        = 4 * 1024 * 1024;
 
 constexpr int G_P2_MARK_THREADS         = 24; // tot
 constexpr int G_P2_REMAP_THREADS        = 24; // tot
@@ -47,10 +47,10 @@ constexpr int G_P2_P2_WRITE_THREADS     = 12; // tot  / 2
 
 
 constexpr int G_P3S1_P1T1F_READ_THREADS =  2; // 2 (og tot/4)
-constexpr int G_P3S1_P1T1F_READ_SIZE    = 1024 * 1024;
+constexpr int G_P3S1_P1T1F_READ_SIZE    = 4 * 1024 * 1024;
 
 constexpr int G_P3S1_P2T7F_READ_THREADS =  2; // 2 (og tot/4)
-constexpr int G_P3S1_P2T7F_READ_SIZE    = 1024 * 1024;
+constexpr int G_P3S1_P2T7F_READ_SIZE    = 4 * 1024 * 1024;
 
 constexpr int G_P3S1_P3S1_WRITE_THREADS = 12; // tot  / 2
 
