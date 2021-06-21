@@ -361,8 +361,6 @@ uint64_t compute_matches(    int R_index,
         &eval_pool, G_P1_MATCH_THREADS, "phase1/match"
     );
 
-    std::cout << "cm1" << std::endl;
-
     Thread<std::pair<std::vector<T>, size_t>>
     read_thread (
         [&L_index, &L_offset, &L_bucket, &avg_bucket_size, &match_pool, L_tmp_out] (std::pair<std::vector<T>, size_t>& input)
@@ -405,10 +403,6 @@ uint64_t compute_matches(    int R_index,
         "phase1/slice"
     );
 
-    std::cout << "cm2" << std::endl;
-
-
-    std::cout << "cm3" << std::endl;
     L_sort->read(&read_thread, G_P1_P1_SORT_THREADS, G_P1_P1_READ_THREADS);
 
     read_thread.close();
