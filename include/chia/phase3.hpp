@@ -19,13 +19,12 @@
 namespace phase3 {
 
 template<typename T, typename S, typename DS_L, typename DS_R>
-void compute_stage1(int L_index, int num_threads,
+void compute_stage1(int L_index,
                     DS_L* L_sort, DS_R* R_sort, DiskSortLP* R_sort_2,
                     DiskTable<T>* L_table = nullptr, bitfield const* L_used = nullptr,
                     DiskTable<S>* R_table = nullptr)
 {
     const auto begin = get_wall_time_micros();
-    const int num_threads_merge = std::max(num_threads / 4, 1);
 
     struct merge_buffer_t {
         uint64_t offset = 0;                    // position offset at buffer[0]
@@ -44,8 +43,8 @@ void compute_stage1(int L_index, int num_threads,
     std::atomic<uint64_t> R_num_write {0};
 
     Thread<std::pair<std::vector<entry_np>, size_t>> L_read(
-        [&mutex, &signal, &signal_1, &L_input, &L_num_read, &R_is_end, num_threads_merge]
          (std::pair<std::vector<entry_np>, size_t>& input) {
+        [&mutex, &signal, &signal_1, &L_input, &L_num_read, &R_is_end]
             merge_buffer_t tmp;
             tmp.offset = L_num_read;
             tmp.new_pos.reserve(input.first.size());
@@ -58,7 +57,7 @@ void compute_stage1(int L_index, int num_threads,
             while (!L_input.empty() && L_input.back().copy_sync == 0 && !R_is_end) {
                 signal_1.wait(lock);    // wait for latest data to be processed by at least one thread
             }
-            while (!L_input.empty() && L_input.front().copy_sync >= num_threads_merge) {
+            while (!L_input.empty() && L_input.front().copy_sync >= G_P3S1_MERGE_THREADS) {
                 L_input.pop_front();    // delete data which has already been copied by all threads
             }
             L_input.emplace_back(std::move(tmp));
@@ -81,7 +80,9 @@ void compute_stage1(int L_index, int num_threads,
                 tmp.pos = get_new_pos<T>{}(entry);
                 out.first.push_back(tmp);
             }
-        }, &L_read, std::max(num_threads / 4, 1), "phase3/filter");
+        },
+        &L_read, G_P3S1_FILTER_THREADS, "phase3/filter"
+    );
 
     typedef DiskSortLP::WriteCache WriteCache;
 
@@ -98,7 +99,9 @@ void compute_stage1(int L_index, int num_threads,
                 cache->add(tmp);
             }
             R_num_write += input.size();
-        }, nullptr, std::max(num_threads / 2, 1), "phase3/add");
+        },
+        nullptr, G_P3S1_P3S1_WRITE_THREADS, "phase3/add"
+    );
 
     ThreadPool<std::pair<std::vector<S>, size_t>, std::vector<entry_kpp>, merge_buffer_t> R_read(
         [&mutex, &signal, &signal_1, &L_input, &L_is_end] (
@@ -161,14 +164,17 @@ void compute_stage1(int L_index, int num_threads,
                 L_buffer.offset += count;
                 L_buffer.new_pos.erase(L_buffer.new_pos.begin(), L_buffer.new_pos.begin() + count);
             }
-        }, &R_add_2, num_threads_merge, "phase3/merge");
+        },
+        &R_add_2, G_P3S1_MERGE_THREADS, "phase3/merge"
+    );
 
     std::thread R_sort_read(
-        [&mutex, &signal_1, num_threads, L_table, R_sort, R_table, &R_read, &R_is_end]() {
+        [&mutex, &signal_1, R_sort, R_table, &R_read, &R_is_end]()
+        {
             if (R_table) {
-                R_table->read(&R_read, std::max(num_threads / 4, 2));
+                R_table->read(&R_read, G_P3S1_P2T7F_READ_THREADS, G_P3S1_P2T7F_READ_SIZE);
             } else {
-                R_sort->read(&R_read, std::max(num_threads / (L_table ? 1 : 2), 1));
+                R_sort->read(&R_read, G_P3S1_P2_SORT_THREADS, G_P3S1_P2_READ_THREADS);
             }
             R_read.close();
             {
@@ -179,10 +185,10 @@ void compute_stage1(int L_index, int num_threads,
         });
 
     if (L_table) {
-        L_table->read(&L_read_1, std::max(num_threads / 4, 2));
+        L_table->read(&L_read_1, G_P3S1_P1T1F_READ_THREADS, G_P3S1_P1T1F_READ_SIZE);
         L_read_1.close();
     } else {
-        L_sort->read(&L_read, std::max(num_threads / (R_table ? 1 : 2), 1));
+        L_sort->read(&L_read, G_P3S1_P2_SORT_THREADS, G_P3S1_P2_READ_THREADS);
     }
     L_read.close();
     {
@@ -328,7 +334,7 @@ void WritePark(
 }
 
 inline
-uint64_t compute_stage2(int L_index, int num_threads,
+uint64_t compute_stage2(int L_index,
                         DiskSortLP* R_sort, DiskSortNP* L_sort,
                         FILE* plot_file, uint64_t L_final_begin, uint64_t* R_final_begin)
 {
@@ -369,7 +375,9 @@ uint64_t compute_stage2(int L_index, int num_threads,
                 cache->add(tmp);
             }
             L_num_write += index - input.second;
-        }, nullptr, std::max(num_threads / 2, 1), "phase3/add");
+        },
+        nullptr, G_P3S2_P3S2_WRITE_THREADS, "phase3/add"
+    );
 
     Thread<std::vector<park_out_t>> park_write(
         [plot_file](std::vector<park_out_t>& input) {
@@ -411,7 +419,9 @@ uint64_t compute_stage2(int L_index, int num_threads,
                 out.emplace_back(std::move(tmp));
                 num_written_final += points.size();
             }
-        }, &park_write, std::max(num_threads / 2, 1), "phase3/park");
+        },
+        &park_write, G_P3S2_F_PARK_THREADS, "phase3/park"
+    );
 
     Thread<std::pair<std::vector<entry_lp>, size_t>> R_read(
         [&R_num_read, &L_add, &park, &park_threads](std::pair<std::vector<entry_lp>, size_t>& input) {
@@ -439,7 +449,7 @@ uint64_t compute_stage2(int L_index, int num_threads,
             L_add.take(input);
         }, "phase3/slice");
 
-    R_sort->read(&R_read, num_threads);
+    R_sort->read(&R_read, G_P3S2_P3S1_SORT_THREADS, G_P3S2_P3S1_READ_THREADS);
     R_read.close();
 
     // Since we don't have a perfect multiple of EPP entries, this writes the last ones
@@ -472,8 +482,6 @@ uint64_t compute_stage2(int L_index, int num_threads,
 inline void compute(
           phase2::output_t& input,
                   output_t& out,
-    const int               num_threads,
-    const int               log_num_buckets,
     const std::string       plot_name,
     const std::string       tmp_dir
 ) {
@@ -501,19 +509,19 @@ inline void compute(
     DiskTable<phase2::entry_1> L_table_1(input.table_1);
 
     auto R_sort_lp = std::make_shared<DiskSortLP>(
-            63, log_num_buckets, path+"s1t2/", prefix+"s1t2_");
+            63, G_LOG_NUM_BUCKETS, path+"s1t2/", prefix+"s1t2_");
 
     compute_stage1<phase2::entry_1, phase2::entry_x, DiskSortNP, phase2::DiskSortT>(
-            1, num_threads, nullptr, input.sort[1].get(), R_sort_lp.get(), &L_table_1, input.bitfield_1.get());
+            1, nullptr, input.sort[1].get(), R_sort_lp.get(), &L_table_1, input.bitfield_1.get());
 
     input.bitfield_1 = nullptr;
     remove(input.table_1.file_name);
 
     auto L_sort_np = std::make_shared<DiskSortNP>(
-            32, log_num_buckets, path+"s2t2/", prefix+"s2t2_");
+            32, G_LOG_NUM_BUCKETS, path+"s2t2/", prefix+"s2t2_");
 
     num_written_final += compute_stage2(
-            1, num_threads, R_sort_lp.get(), L_sort_np.get(),
+            1, R_sort_lp.get(), L_sort_np.get(),
             plot_file, final_pointers[1], &final_pointers[2]);
 
     for (int L_index = 2; L_index < 6; ++L_index)
@@ -521,32 +529,32 @@ inline void compute(
         auto t_string = "t" + std::to_string(L_index+1);
 
         R_sort_lp = std::make_shared<DiskSortLP>(
-                63, log_num_buckets, path+"s1"+t_string+"/", prefix+"s1"+t_string+"_");
+                63, G_LOG_NUM_BUCKETS, path+"s1"+t_string+"/", prefix+"s1"+t_string+"_");
 
         compute_stage1<entry_np, phase2::entry_x, DiskSortNP, phase2::DiskSortT>(
-                L_index, num_threads, L_sort_np.get(), input.sort[L_index].get(), R_sort_lp.get());
+                L_index, L_sort_np.get(), input.sort[L_index].get(), R_sort_lp.get());
 
         L_sort_np = std::make_shared<DiskSortNP>(
-                32, log_num_buckets, path+"s2"+t_string+"/", prefix+"s2"+t_string+"_");
+                32, G_LOG_NUM_BUCKETS, path+"s2"+t_string+"/", prefix+"s2"+t_string+"_");
 
         num_written_final += compute_stage2(
-                L_index, num_threads, R_sort_lp.get(), L_sort_np.get(),
+                L_index, R_sort_lp.get(), L_sort_np.get(),
                 plot_file, final_pointers[L_index], &final_pointers[L_index + 1]);
     }
 
     DiskTable<phase2::entry_7> R_table_7(input.table_7);
 
-    R_sort_lp = std::make_shared<DiskSortLP>(63, log_num_buckets, path+"s1t7/", prefix+"s1t7_");
+    R_sort_lp = std::make_shared<DiskSortLP>(63, G_LOG_NUM_BUCKETS, path+"s1t7/", prefix+"s1t7_");
 
     compute_stage1<entry_np, phase2::entry_7, DiskSortNP, phase2::DiskSort7>(
-            6, num_threads, L_sort_np.get(), nullptr, R_sort_lp.get(), nullptr, nullptr, &R_table_7);
+            6, L_sort_np.get(), nullptr, R_sort_lp.get(), nullptr, nullptr, &R_table_7);
 
     remove(input.table_7.file_name);
 
-    L_sort_np = std::make_shared<DiskSortNP>(32, log_num_buckets, path+"s2t7/", prefix+"s2t7_");
+    L_sort_np = std::make_shared<DiskSortNP>(32, G_LOG_NUM_BUCKETS, path+"s2t7/", prefix+"s2t7_");
 
     const auto num_written_final_7 = compute_stage2(
-            6, num_threads, R_sort_lp.get(), L_sort_np.get(),
+            6, R_sort_lp.get(), L_sort_np.get(),
             plot_file, final_pointers[6], &final_pointers[7]);
     num_written_final += num_written_final_7;
 

@@ -21,8 +21,6 @@
 #include <sys/resource.h>
 
 inline phase4::output_t create_plot(
-    const int              num_threads,
-    const int              log_num_buckets,
     const vector<uint8_t>& pool_key_bytes,
     const vector<uint8_t>& farmer_key_bytes,
     const std::string&     tmp_dir
@@ -30,9 +28,8 @@ inline phase4::output_t create_plot(
     const auto total_begin = get_wall_time_micros();
 
     std::cout << "Process ID: " << getpid() << std::endl;
-    std::cout << "Number of Threads: " << num_threads << std::endl;
-    std::cout << "Number of Buckets: 2^" << log_num_buckets
-            << " (" << (1 << log_num_buckets) << ")" << std::endl;
+    std::cout << "Number of Threads: " << G_TOTAL_THREADS << std::endl;
+    std::cout << "Number of Buckets: 2^" << G_LOG_NUM_BUCKETS << " (" << (1 << G_LOG_NUM_BUCKETS) << ")" << std::endl;
 
     bls::G1Element pool_key;
     bls::G1Element farmer_key;
@@ -88,17 +85,10 @@ inline phase4::output_t create_plot(
     }
     params.plot_name = plot_name;
 
-    phase1::output_t out_1;
-    phase1::compute(params, out_1, num_threads, log_num_buckets, plot_name, tmp_dir);
-
-    phase2::output_t out_2;
-    phase2::compute(out_1, out_2, num_threads, log_num_buckets, plot_name, tmp_dir);
-
-    phase3::output_t out_3;
-    phase3::compute(out_2, out_3, num_threads, log_num_buckets, plot_name, tmp_dir);
-
-    phase4::output_t out_4;
-    phase4::compute(out_3, out_4, num_threads, log_num_buckets, plot_name, tmp_dir);
+    phase1::output_t out_1; phase1::compute(params, out_1, plot_name, tmp_dir);
+    phase2::output_t out_2; phase2::compute(out_1,  out_2, plot_name, tmp_dir);
+    phase3::output_t out_3; phase3::compute(out_2,  out_3, plot_name, tmp_dir);
+    phase4::output_t out_4; phase4::compute(out_3,  out_4, plot_name, tmp_dir);
 
     const auto time_secs = (get_wall_time_micros() - total_begin) / 1e6;
     std::cout << "Total plot creation time was "
@@ -122,12 +112,8 @@ int main(int argc, char** argv)
     std::string pool_key_str;
     std::string farmer_key_str;
     std::string tmp_dir;
-    int num_threads = 4;
-    int num_buckets = 256;
 
     options.allow_unrecognised_options().add_options() \
-        ("r, threads",   "Number of threads (default = 4)",                        cxxopts::value<int>(num_threads)) \
-        ("u, buckets",   "Number of buckets (default = 256)",                      cxxopts::value<int>(num_buckets)) \
         ("t, tmpdir",    "Temporary directory, needs ~220 GiB (default = $PWD)",   cxxopts::value<std::string>(tmp_dir)) \
         ("p, poolkey",   "Pool Public Key (48 bytes)",                             cxxopts::value<std::string>(pool_key_str)) \
         ("f, farmerkey", "Farmer Public Key (48 bytes)",                           cxxopts::value<std::string>(farmer_key_str)) \
@@ -158,7 +144,6 @@ int main(int argc, char** argv)
     }
     const auto pool_key = hex_to_bytes(pool_key_str);
     const auto farmer_key = hex_to_bytes(farmer_key_str);
-    const int log_num_buckets = int(log2(num_buckets));
 
     if (pool_key.size() != bls::G1Element::SIZE) {
         std::cout << "Invalid poolkey: " << bls::Util::HexStr(pool_key) << ", '" << pool_key_str
@@ -172,14 +157,6 @@ int main(int argc, char** argv)
     }
     if (!tmp_dir.empty() && tmp_dir.find_last_of("/\\") != tmp_dir.size() - 1) {
         std::cout << "Invalid tmpdir: " << tmp_dir << " (needs trailing '/' or '\\')" << std::endl;
-        return -2;
-    }
-    if (num_threads < 1 || num_threads > 1024) {
-        std::cout << "Invalid threads parameter: " << num_threads << " (supported: [1..1024])" << std::endl;
-        return -2;
-    }
-    if (log_num_buckets < 4 || log_num_buckets > 16) {
-        std::cout << "Invalid buckets parameter: 2^" << log_num_buckets << " (supported: 2^[4..16])" << std::endl;
         return -2;
     }
 
@@ -199,7 +176,7 @@ int main(int argc, char** argv)
     #endif
     std::cout << std::endl;
 
-    create_plot(num_threads, log_num_buckets, pool_key, farmer_key, tmp_dir);
+    create_plot(pool_key, farmer_key, tmp_dir);
 
     return 0;
 }

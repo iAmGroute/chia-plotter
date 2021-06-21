@@ -247,7 +247,7 @@ private:
  * id = 32 bytes
  */
 template<typename DS>
-void compute_f1(const uint8_t* id, int num_threads, DS* T1_sort)
+void compute_f1(const uint8_t* id, DS* T1_sort)
 {
     static constexpr size_t M = 4096;    // F1 block size
 
@@ -266,7 +266,7 @@ void compute_f1(const uint8_t* id, int num_threads, DS* T1_sort)
                 cache->add(entry);
             }
         },
-        nullptr, std::max(num_threads / 2, 1), "phase1/add" // TODO: change to a few threads only?
+        nullptr, G_P1T1_P1T1_WRITE_THREADS, "phase1/add"
     );
 
     ThreadPool<uint64_t, std::vector<entry_1>>
@@ -279,7 +279,7 @@ void compute_f1(const uint8_t* id, int num_threads, DS* T1_sort)
                 F1.compute_block(block * M + i, &out[i * 16]);
             }
         },
-        &output, num_threads, "phase1/F1"
+        &output, G_P1T1_CALC_THREADS, "phase1/F1"
     );
 
     for (uint64_t k = 0; k < (uint64_t(1) << 28) / M; ++k) {
@@ -293,7 +293,7 @@ void compute_f1(const uint8_t* id, int num_threads, DS* T1_sort)
 }
 
 template<typename T, typename S, typename R, typename DS_L, typename DS_R>
-uint64_t compute_matches(    int R_index, int num_threads,
+uint64_t compute_matches(    int R_index,
                             DS_L* L_sort, DS_R* R_sort,
                             Processor<std::vector<T>>* L_tmp_out,
                             Processor<std::vector<S>>* R_tmp_out)
@@ -323,7 +323,7 @@ uint64_t compute_matches(    int R_index, int num_threads,
                 cache->add(entry);
             }
         },
-        nullptr, std::max(num_threads / 2, 1), "phase1/add"
+        nullptr, G_P1_P1_WRITE_THREADS, "phase1/add"
     );
 
     Processor<std::vector<S>>* R_out = &R_add;
@@ -345,7 +345,7 @@ uint64_t compute_matches(    int R_index, int num_threads,
                 out.push_back(entry);
             }
         },
-        R_out, num_threads, "phase1/eval"
+        R_out, G_P1_EVAL_THREADS, "phase1/eval"
     );
 
     ThreadPool<std::vector<match_input_t>, std::vector<match_t<T>>, FxMatcher<T>>
@@ -358,7 +358,7 @@ uint64_t compute_matches(    int R_index, int num_threads,
             }
             num_written += out.size();
         },
-        &eval_pool, num_threads, "phase1/match"
+        &eval_pool, G_P1_MATCH_THREADS, "phase1/match"
     );
 
     std::cout << "cm1" << std::endl;
@@ -407,9 +407,9 @@ uint64_t compute_matches(    int R_index, int num_threads,
 
     std::cout << "cm2" << std::endl;
 
-    L_sort->read(&read_thread, std::max(num_threads / 2, 2));
 
     std::cout << "cm3" << std::endl;
+    L_sort->read(&read_thread, G_P1_P1_SORT_THREADS, G_P1_P1_READ_THREADS);
 
     read_thread.close();
     match_pool.close();
@@ -436,7 +436,7 @@ uint64_t compute_matches(    int R_index, int num_threads,
 }
 
 template<typename T, typename S, typename R, typename DS_L, typename DS_R>
-uint64_t compute_table(    int R_index, int num_threads,
+uint64_t compute_table(    int R_index,
                         DS_L* L_sort, DS_R* R_sort,
                         DiskTable<R>* L_tmp, DiskTable<S>* R_tmp = nullptr)
 {
@@ -467,7 +467,7 @@ uint64_t compute_table(    int R_index, int num_threads,
     const auto begin = get_wall_time_micros();
     const auto num_matches =
             phase1::compute_matches<T, S, R>(
-                    R_index, num_threads, L_sort, R_sort,
+                    R_index, L_sort, R_sort,
                     L_tmp ? &L_write : nullptr,
                     R_tmp ? &R_write : nullptr);
 
@@ -488,8 +488,6 @@ uint64_t compute_table(    int R_index, int num_threads,
 inline void compute(
     const input_t&    input,
           output_t&   out,
-    const int         num_threads,
-    const int         log_num_buckets,
     const std::string plot_name,
     const std::string tmp_dir
 ) {
@@ -500,19 +498,19 @@ inline void compute(
     const std::string path   = tmp_dir   + "p1/";
     const std::string prefix = plot_name + "_p1_";
 
-    DiskSort1 sort_1(32+kExtraBits, log_num_buckets, path+"t1/", prefix+"t1_");     compute_f1(input.id.data(), num_threads, &sort_1);
-    DiskTable<tmp_entry_1> tmp_1(                    path+"t1f/"+prefix+"t1f.tmp");
-    DiskSort2 sort_2(32+kExtraBits, log_num_buckets, path+"t2/", prefix+"t2_");     compute_table<entry_1, entry_2, tmp_entry_1>(2, num_threads, &sort_1, &sort_2, &tmp_1);
-    DiskTable<tmp_entry_x> tmp_2(                    path+"t2f/"+prefix+"t2f.tmp");
-    DiskSort3 sort_3(32+kExtraBits, log_num_buckets, path+"t3/", prefix+"t3_");     compute_table<entry_2, entry_3, tmp_entry_x>(3, num_threads, &sort_2, &sort_3, &tmp_2);
-    DiskTable<tmp_entry_x> tmp_3(                    path+"t3f/"+prefix+"t3f.tmp");
-    DiskSort4 sort_4(32+kExtraBits, log_num_buckets, path+"t4/", prefix+"t4_");     compute_table<entry_3, entry_4, tmp_entry_x>(4, num_threads, &sort_3, &sort_4, &tmp_3);
-    DiskTable<tmp_entry_x> tmp_4(                    path+"t4f/"+prefix+"t4f.tmp");
-    DiskSort5 sort_5(32+kExtraBits, log_num_buckets, path+"t5/", prefix+"t5_");     compute_table<entry_4, entry_5, tmp_entry_x>(5, num_threads, &sort_4, &sort_5, &tmp_4);
-    DiskTable<tmp_entry_x> tmp_5(                    path+"t5f/"+prefix+"t5f.tmp");
-    DiskSort6 sort_6(32+kExtraBits, log_num_buckets, path+"t6/", prefix+"t6_");     compute_table<entry_5, entry_6, tmp_entry_x>(6, num_threads, &sort_5, &sort_6, &tmp_5);
-    DiskTable<tmp_entry_x> tmp_6(                    path+"t6f/"+prefix+"t6f.tmp");
-    DiskTable<entry_7>     tmp_7(                    path+"t7f/"+prefix+"t7f.tmp"); compute_table<entry_6, entry_7, tmp_entry_x, DiskSort6, DiskSort7>(7, num_threads, &sort_6, nullptr, &tmp_6, &tmp_7);
+    DiskSort1 sort_1(32+kExtraBits, G_LOG_NUM_BUCKETS, path+"t1/", prefix+"t1_");     compute_f1(input.id.data(), &sort_1);
+    DiskTable<tmp_entry_1> tmp_1(                      path+"t1f/"+prefix+"t1f.tmp");
+    DiskSort2 sort_2(32+kExtraBits, G_LOG_NUM_BUCKETS, path+"t2/", prefix+"t2_");     compute_table<entry_1, entry_2, tmp_entry_1>(2, &sort_1, &sort_2, &tmp_1);
+    DiskTable<tmp_entry_x> tmp_2(                      path+"t2f/"+prefix+"t2f.tmp");
+    DiskSort3 sort_3(32+kExtraBits, G_LOG_NUM_BUCKETS, path+"t3/", prefix+"t3_");     compute_table<entry_2, entry_3, tmp_entry_x>(3, &sort_2, &sort_3, &tmp_2);
+    DiskTable<tmp_entry_x> tmp_3(                      path+"t3f/"+prefix+"t3f.tmp");
+    DiskSort4 sort_4(32+kExtraBits, G_LOG_NUM_BUCKETS, path+"t4/", prefix+"t4_");     compute_table<entry_3, entry_4, tmp_entry_x>(4, &sort_3, &sort_4, &tmp_3);
+    DiskTable<tmp_entry_x> tmp_4(                      path+"t4f/"+prefix+"t4f.tmp");
+    DiskSort5 sort_5(32+kExtraBits, G_LOG_NUM_BUCKETS, path+"t5/", prefix+"t5_");     compute_table<entry_4, entry_5, tmp_entry_x>(5, &sort_4, &sort_5, &tmp_4);
+    DiskTable<tmp_entry_x> tmp_5(                      path+"t5f/"+prefix+"t5f.tmp");
+    DiskSort6 sort_6(32+kExtraBits, G_LOG_NUM_BUCKETS, path+"t6/", prefix+"t6_");     compute_table<entry_5, entry_6, tmp_entry_x>(6, &sort_5, &sort_6, &tmp_5);
+    DiskTable<tmp_entry_x> tmp_6(                      path+"t6f/"+prefix+"t6f.tmp");
+    DiskTable<entry_7>     tmp_7(                      path+"t7f/"+prefix+"t7f.tmp"); compute_table<entry_6, entry_7, tmp_entry_x, DiskSort6, DiskSort7>(7, &sort_6, nullptr, &tmp_6, &tmp_7);
 
     out.params = input;
     out.table[0] = tmp_1.get_info();

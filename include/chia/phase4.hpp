@@ -43,7 +43,7 @@ static uint32_t CalculateC3Size(uint8_t k)
 // C2 (checkpoint values into)
 // C3 (deltas of f7s between C1 checkpoints)
 uint64_t compute(    FILE* plot_file, const int header_size,
-                    phase3::DiskSortNP* L_sort_7, int num_threads,
+                    phase3::DiskSortNP* L_sort_7,
                     const uint64_t final_pointer_7,
                     const uint64_t final_entries_written)
 {
@@ -116,10 +116,14 @@ uint64_t compute(    FILE* plot_file, const int header_size,
                 bits.ToBytes(tmp.buffer.data());
                 out.emplace_back(std::move(tmp));
             }
-        }, &plot_write, std::max(num_threads / 2, 1), "phase4/P7");
+        },
+        &plot_write, G_P4_F_P7_THREADS, "phase4/P7"
+    );
 
-    ThreadPool<park_deltas_t, std::vector<write_data_t>> park_threads(
-        [C3_size](park_deltas_t& park, std::vector<write_data_t>& out, size_t&) {
+    ThreadPool<park_deltas_t, std::vector<write_data_t>>
+    park_threads (
+        [C3_size](park_deltas_t& park, std::vector<write_data_t>& out, size_t&)
+        {
             write_data_t tmp;
             tmp.offset = park.offset;
             tmp.buffer.resize(C3_size);
@@ -131,7 +135,9 @@ uint64_t compute(    FILE* plot_file, const int header_size,
             }
             Util::IntToTwoBytes(tmp.buffer.data(), num_bytes);    // Write the size
             out.emplace_back(std::move(tmp));
-        }, &plot_write, std::max(num_threads / 2, 1), "phase4/C3");
+        },
+        &plot_write, G_P4_F_PARK_THREADS, "phase4/C3"
+    );
 
     // We read each table7 entry, which is sorted by f7, but we don't need f7 anymore. Instead,
     // we will just store pos6, and the deltas in table C3, and checkpoints in tables C1 and C2.
@@ -190,7 +196,7 @@ uint64_t compute(    FILE* plot_file, const int header_size,
         p7_threads.take(parks);
     }, "phase4/read");
 
-    L_sort_7->read(&read_thread, num_threads);
+    L_sort_7->read(&read_thread, G_P4_P3S2_SORT_THREADS, G_P4_P3S2_READ_THREADS);
     read_thread.close();
 
     park_data.offset = final_file_writer_3;
@@ -244,8 +250,6 @@ uint64_t compute(    FILE* plot_file, const int header_size,
 inline void compute(
     const phase3::output_t& input,
                   output_t& out,
-    const int               num_threads,
-    const int               log_num_buckets,
     const std::string       plot_name,
     const std::string       tmp_dir
 ) {
@@ -258,7 +262,7 @@ inline void compute(
     }
 
     out.plot_size = compute(plot_file, input.header_size, input.sort_7.get(),
-                            num_threads, input.final_pointer_7, input.num_written_7);
+                            input.final_pointer_7, input.num_written_7);
 
     std::cout << "c " << input.plot_file_name << std::endl;
     fclose(plot_file);

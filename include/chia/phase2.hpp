@@ -18,14 +18,13 @@
 namespace phase2 {
 
 template<typename T, typename S, typename DS>
-void compute_table(    int R_index, int num_threads,
                     DS* R_sort, DiskTable<S>* R_file,
                     const table_t& R_table,
                     bitfield* L_used,
                     const bitfield* R_used)
 {
-    const int num_threads_read = std::max(num_threads / 4, 2);
-
+void compute_table(
+    int             R_index,
     DiskTable<T> R_input(R_table);
     {
         const auto begin = get_wall_time_micros();
@@ -40,10 +39,12 @@ void compute_table(    int R_index, int num_threads,
                     L_used->set(entry.pos);
                     L_used->set(uint64_t(entry.pos) + entry.off);
                 }
-            }, nullptr, num_threads, "phase2/mark");
+            },
+            nullptr, G_P2_MARK_THREADS, "phase2/mark"
+        );
 
         L_used->clear();
-        R_input.read(&pool, num_threads_read);
+        R_input.read(&pool, G_P2_P1F_READ_THREADS, G_P2_P1F_READ_SIZE);
         pool.close();
 
         std::cout << "[P2] Table " << R_index << " scan took "
@@ -71,7 +72,9 @@ void compute_table(    int R_index, int num_threads,
             for (auto& entry : input) {
                 cache->add(entry);
             }
-        }, nullptr, std::max(num_threads / 2, 1), "phase2/add");
+        },
+        nullptr, G_P2_P2_WRITE_THREADS, "phase2/add"
+    );
 
     Processor<std::vector<S>>* R_out = &R_add;
     if (R_file) {
@@ -101,9 +104,11 @@ void compute_table(    int R_index, int num_threads,
                 tmp.off = pos_off.second;
                 out.push_back(tmp);
             }
-        }, &R_count, num_threads, "phase2/remap");
+        },
+        &R_count, G_P2_REMAP_THREADS, "phase2/remap"
+    );
 
-    R_input.read(&map_pool, num_threads_read);
+    R_input.read(&map_pool, G_P2_P1F_READ_THREADS, G_P2_P1F_READ_SIZE);
 
     map_pool.close();
     R_count.close();
@@ -125,8 +130,6 @@ void compute_table(    int R_index, int num_threads,
 inline void compute(
     const phase1::output_t& input,
                   output_t& out,
-    const int               num_threads,
-    const int               log_num_buckets,
     const std::string       plot_name,
     const std::string       tmp_dir
 ) {
@@ -147,7 +150,7 @@ inline void compute(
     DiskTable<entry_7> table_7(path+"t7f/"+prefix+"t7f.tmp");
 
     compute_table<entry_7, entry_7, DiskSort7>(
-            7, num_threads, nullptr, &table_7, input.table[6], next_bitfield.get(), nullptr);
+            7, nullptr, &table_7, input.table[6], next_bitfield.get(), nullptr);
 
     table_7.close();
     remove(input.table[6].file_name);
@@ -156,10 +159,10 @@ inline void compute(
     {
         std::swap(curr_bitfield, next_bitfield);
         auto t_string = "t" + std::to_string(i+1);
-        out.sort[i] = std::make_shared<DiskSortT>(32, log_num_buckets, path+t_string+"/", prefix+t_string+"_");
+        out.sort[i] = std::make_shared<DiskSortT>(32, G_LOG_NUM_BUCKETS, path+t_string+"/", prefix+t_string+"_");
 
         compute_table<phase1::tmp_entry_x, entry_x, DiskSortT>(
-            i + 1, num_threads, out.sort[i].get(), nullptr, input.table[i], next_bitfield.get(), curr_bitfield.get());
+            i + 1, out.sort[i].get(), nullptr, input.table[i], next_bitfield.get(), curr_bitfield.get());
 
         remove(input.table[i].file_name);
     }
