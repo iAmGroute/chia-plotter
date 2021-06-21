@@ -68,7 +68,7 @@ public:
         int                                           num_threads_read,
         const size_t                                  block_size_b
     ) const {
-        if (num_threads_read > 256) throw std::logic_error("DT: too many read threads");
+        if (num_threads_read > 300) throw std::logic_error("DT: too many read threads "+std::to_string(num_threads_read));
         if (block_size_b    < 8000) throw std::logic_error("DT: too small read size "  +std::to_string(block_size_b));
         const size_t block_size = block_size_b / T::disk_size;
 
