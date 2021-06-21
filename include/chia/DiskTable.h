@@ -68,6 +68,9 @@ public:
         int                                           num_threads_read = 2,
         const size_t                                  block_size       = g_read_chunk_size
     ) const {
+        if (num_threads_read > 256) throw std::logic_error("DT: too many read threads");
+        if (block_size < 1024)      throw std::logic_error("DT: too small read size");
+
         ThreadPool<std::pair<size_t, size_t>, std::pair<std::vector<T>, size_t>, local_t>
         pool (
             std::bind(

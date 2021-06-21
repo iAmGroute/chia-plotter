@@ -139,6 +139,8 @@ void DiskSort<T, Key>::read(Processor<std::pair<std::vector<T>, size_t>>* output
     if (num_threads_read < 0) {
         num_threads_read = std::max(num_threads / 2, 2);
     }
+    if (num_threads      > 256)         throw std::logic_error("DS: too many sort threads");
+    if (num_threads_read > num_threads) throw std::logic_error("DS: more read than sort threads");
 
     ThreadPool<std::pair<std::vector<T>, size_t>,
                std::pair<std::vector<T>, size_t>>
