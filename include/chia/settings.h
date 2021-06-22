@@ -28,8 +28,8 @@ constexpr int G_TOTAL_THREADS           = 24;
 constexpr int G_P1T1_CALC_THREADS       = 24; // tot    | tot
 constexpr int G_P1T1_P1T1_WRITE_THREADS = 12; // tot /2 | tot /2
 
-constexpr int G_P1_P1_SORT_THREADS      = 12; // tot /2 | tot /2
-constexpr int G_P1_P1_READ_THREADS      = 12; // sort   | sort/2
+constexpr int G_P1_P1_SORT_THREADS      = 24; // tot    | tot /2
+constexpr int G_P1_P1_READ_THREADS      = 12; // sort/2 | sort/2
 constexpr int G_P1_MATCH_THREADS        = 24; // tot    | tot
 constexpr int G_P1_EVAL_THREADS         = 24; // tot    | tot
 constexpr int G_P1_P1_WRITE_THREADS     = 12; // tot /2 | tot /2
@@ -45,8 +45,8 @@ constexpr int G_P3S1_P1T1F_READ_SIZE    = 4 * 1024 * 1024;
 constexpr int G_P3S1_P2T7F_READ_THREADS =  2; // 2      | tot /4
 constexpr int G_P3S1_P2T7F_READ_SIZE    = 4 * 1024 * 1024;
 constexpr int G_P3S1_P3S1_WRITE_THREADS = 12; // tot /2 | tot /2
-constexpr int G_P3S1_P2_SORT_THREADS    = 12; // tot /2 | tot /2 except t1f/t7f where tot
-constexpr int G_P3S1_P2_READ_THREADS    = 12; // sort   | sort/2
+constexpr int G_P3S1_P2_SORT_THREADS    = 24; // tot    | tot /2 except t1f/t7f where tot
+constexpr int G_P3S1_P2_READ_THREADS    = 12; // sort/2 | sort/2
 constexpr int G_P3S1_FILTER_THREADS     =  6; // tot /4 | tot /4
 constexpr int G_P3S1_MERGE_THREADS      =  6; // tot /4 | tot /4
 
