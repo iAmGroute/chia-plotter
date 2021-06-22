@@ -93,15 +93,17 @@ void DiskSort<T, Key>::WriteCache::flush()
 }
 
 template<typename T, typename Key>
-DiskSort<T, Key>::DiskSort(    int key_size, int log_num_buckets,
-                            std::string path, std::string prefix, bool read_only)
-    :    key_size(key_size),
-        log_num_buckets(log_num_buckets),
-        bucket_key_shift(key_size - log_num_buckets),
-        path(path),
-        keep_files(read_only),
-        is_finished(read_only),
-        buckets(1 << log_num_buckets)
+DiskSort<T, Key>::DiskSort(
+    int key_size, int log_num_buckets,
+    std::string path, std::string prefix,
+    bool read_only, bool keep_files
+) :
+    key_size(key_size),
+    log_num_buckets(log_num_buckets),
+    bucket_key_shift(key_size - log_num_buckets),
+    path(path),
+    keep_files(keep_files),
+    buckets(1 << log_num_buckets)
 {
     for (size_t i = 0; i < buckets.size(); ++i) {
         auto& bucket = buckets[i];
@@ -243,15 +245,6 @@ void DiskSort<T, Key>::read_bucket(    std::pair<size_t, size_t>& index,
         out.emplace_back(std::move(entry.second), offset);
         offset += count;
     }
-}
-
-template<typename T, typename Key>
-void DiskSort<T, Key>::finish()
-{
-    for (auto& bucket : buckets) {
-        bucket.close();
-    }
-    is_finished = true;
 }
 
 template<typename T, typename Key>

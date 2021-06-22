@@ -51,8 +51,11 @@ public:
         std::vector<write_buffer_t<T>> buckets;
     };
 
-    DiskSort(    int key_size, int log_num_buckets,
-                std::string path, std::string prefix, bool read_only = false);
+    DiskSort(
+        int key_size, int log_num_buckets,
+        std::string path, std::string prefix,
+        bool read_only, bool keep_files
+    );
 
     ~DiskSort() {
         close();
@@ -63,8 +66,6 @@ public:
 
     void read(    Processor<std::pair<std::vector<T>, size_t>>* output,
                 int num_threads, int num_threads_read = -1);
-
-    void finish();
 
     void close();
 
@@ -79,10 +80,6 @@ public:
         return buckets.size();
     }
 
-    void set_keep_files(bool enable) {
-        keep_files = enable;
-    }
-
 private:
     void read_bucket(    std::pair<size_t, size_t>& index,
                         std::vector<std::pair<std::vector<T>, size_t>>& out,
@@ -93,14 +90,9 @@ private:
     const int log_num_buckets = 0;
     const int bucket_key_shift = 0;
     const std::string path;
-
-    bool keep_files = false;
-    bool is_finished = false;
+    const bool keep_files = false;
 
     std::vector<bucket_t> buckets;
-
 };
-
-
 
 #endif /* INCLUDE_CHIA_DISKSORT_H_ */

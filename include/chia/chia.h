@@ -76,6 +76,10 @@ struct table_t {
     std::string file_name;
     size_t num_entries = 0;
 };
+struct dsort_t {
+    std::string file_name;
+    size_t num_entries = 0;
+};
 
 
 #endif /* INCLUDE_CHIA_CHIA_H_ */

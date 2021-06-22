@@ -79,7 +79,7 @@ struct output_t {
     table_t table_1;
     table_t table_7;
     std::shared_ptr<bitfield> bitfield_1;
-    std::shared_ptr<DiskSortT> sort[6];
+    dsort_t dsort[6];
 };
 
 
