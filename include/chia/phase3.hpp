@@ -197,7 +197,7 @@ void compute_stage1(int L_index,
         L_table->read(&L_read_1, G_P3S1_P1T1F_READ_THREADS, G_P3S1_P1T1F_READ_SIZE);
         L_read_1.close();
     } else {
-        L_sort->read(&L_read, G_P3S1_P2_SORT_THREADS, G_P3S1_P2_READ_THREADS);
+        L_sort->read(&L_read, G_P3S1_P3S2_SORT_THREADS, G_P3S1_P3S2_READ_THREADS);
     }
     L_read.close();
     {
