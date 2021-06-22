@@ -32,8 +32,10 @@ private:
 
 public:
     DiskTable(std::string file_name, size_t num_entries = 0)
-        :    file_name(file_name),
-            num_entries(num_entries)
+    :
+        file_name(file_name),
+        num_entries(num_entries),
+        cache(num_entries ? nullptr : new byte_buffer_t<T, G_DT_WRITE_CACHE_SIZE> ())
     {
         if (!num_entries) {
             std::cout << "w " << file_name << std::endl;
@@ -44,13 +46,11 @@ public:
         }
     }
 
-    DiskTable(const table_t& info)
-        :    DiskTable(info.file_name, info.num_entries)
-    {
-    }
+    DiskTable(const table_t& info) : DiskTable(info.file_name, info.num_entries) {}
 
     ~DiskTable() {
         close();
+        if (cache) delete cache;
     }
 
     DiskTable(DiskTable&) = delete;
@@ -112,19 +112,19 @@ public:
 
     // NOT thread-safe
     void write(const T& entry) {
-        if (cache.count >= cache.capacity) {
+        if (cache->count >= cache->capacity) {
             flush();
         }
-        entry.write(cache.entry_at(cache.count));
-        cache.count++;
+        entry.write(cache->entry_at(cache->count));
+        cache->count++;
     }
 
     void flush() {
-        if (fwrite(cache.data, cache.entry_size, cache.count, file_out) != cache.count) {
+        if (fwrite(cache->data, cache->entry_size, cache->count, file_out) != cache->count) {
             throw std::runtime_error("fwrite() failed");
         }
-        num_entries += cache.count;
-        cache.count = 0;
+        num_entries += cache->count;
+        cache->count = 0;
     }
 
     void close() {
@@ -156,10 +156,10 @@ private:
     }
 
 private:
-    std::string file_name;
+    const std::string file_name;
     size_t num_entries;
 
-    byte_buffer_t<T, G_DT_WRITE_CACHE_SIZE> cache;
+    byte_buffer_t<T, G_DT_WRITE_CACHE_SIZE> *const cache;
     FILE* file_out = nullptr;
 
 };
