@@ -37,7 +37,7 @@ template<typename T>
 class Thread : public Processor<T> {
 public:
     Thread(const std::function<void(T&)>& func, const std::string& name = "")
-        :    execute(func)
+        :    func(func)
     {
         thread = std::thread(&Thread::loop, this, name);
     }
@@ -122,7 +122,7 @@ private:
             lock.unlock();
             signal.notify_all();        // notify about is_busy + is_avail change
             try {
-                execute(tmp);
+                func(tmp);
                 lock.lock();
             } catch(const std::exception& ex) {
                 lock.lock();
@@ -144,7 +144,7 @@ private:
     std::mutex mutex;
     std::thread thread;
     std::condition_variable signal;
-    std::function<void(T&)> execute;
+    std::function<void(T&)> func;
     std::string ex_what;
 
 };

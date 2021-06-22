@@ -33,7 +33,7 @@ public:
         const std::string&                     name = ""
     ) :
         output(output),
-        execute(func)
+        func(func)
     {
         if (num_threads < 1) {
             throw std::logic_error("num_threads < 1");
@@ -115,7 +115,7 @@ private:
             job = state->job;
         }
         S out;
-        execute(input, out, state->local);
+        func(input, out, state->local);
         {
             std::unique_lock<std::mutex> lock(prev->mutex);
             while (prev->job < job) {
@@ -135,7 +135,7 @@ private:
 private:
     uint64_t next = 0;
     Processor<S>* output = nullptr;
-    std::function<void(T&, S&, L&)> execute;
+    std::function<void(T&, S&, L&)> func;
     std::vector<std::shared_ptr<thread_t>> threads;
 
 };
