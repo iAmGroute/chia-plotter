@@ -9,7 +9,6 @@
 #define INCLUDE_CHIA_BUFFER_H_
 
 #include <chia/settings.h>
-#include <iostream>
 
 
 template<typename T, size_t _size>
@@ -19,9 +18,6 @@ struct byte_buffer_t
     static constexpr size_t capacity   = _size / entry_size;
     uint8_t data[capacity * entry_size];
     size_t  count = 0;
-
-    byte_buffer_t()  { std::cout << "B " << _size << std::endl; }
-    ~byte_buffer_t() { std::cout << "b " << _size << std::endl; }
 
     uint8_t* entry_at(const size_t i) {
         return data + i * entry_size;
