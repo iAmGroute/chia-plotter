@@ -84,10 +84,7 @@ void compute_table(
         nullptr, G_P2_P2_WRITE_THREADS, "phase2/add"
     );
 
-    Processor<std::vector<S>>* R_out = &R_add;
-    if (R_file) {
-        R_out = &R_write;
-    }
+    Processor<std::vector<S>>* R_out = R_file ? &R_write : &R_add;
 
     Thread<std::vector<S>> R_count (
         [R_out, &num_written](std::vector<S>& input)
@@ -128,12 +125,8 @@ void compute_table(
     R_write.close();
     R_add.close();
 
-    if (R_sort) {
-        R_sort->finish();
-    }
-    if (R_file) {
-        R_file->flush();
-    }
+    if (R_file) R_file->close();
+
     std::cout << "[P2] Table " << R_index << " rewrite took "
                 << (get_wall_time_micros() - begin) / 1e6 << " sec"
                 << ", dropped " << R_table.num_entries - num_written << " entries"

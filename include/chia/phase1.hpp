@@ -293,11 +293,11 @@ void compute_f1(const uint8_t* id, DS* T1_sort)
 }
 
 template<typename T, typename S, typename R, typename DS_L, typename DS_R>
-uint64_t compute_matches(    int R_index,
-                            DS_L* L_sort, DS_R* R_sort,
-                            Processor<std::vector<T>>* L_tmp_out,
-                            Processor<std::vector<S>>* R_tmp_out)
-{
+uint64_t compute_matches(
+    int R_index, DS_L* L_sort, DS_R* R_sort,
+    Processor<std::vector<T>>* L_tmp_out,
+    Processor<std::vector<S>>* R_tmp_out
+) {
     std::atomic<uint64_t> num_found {};
     std::atomic<uint64_t> num_written {};
     std::array<uint64_t, 2> L_index = {};
@@ -326,12 +326,9 @@ uint64_t compute_matches(    int R_index,
         nullptr, G_P1_P1_WRITE_THREADS, "phase1/add"
     );
 
-    Processor<std::vector<S>>* R_out = &R_add;
-    if (R_tmp_out) {
-        R_out = R_tmp_out;
-    }
+    Processor<std::vector<S>>* R_out = R_tmp_out ? R_tmp_out : &R_add;
 
-    ThreadPool<std::vector<match_t<T>>, std::vector<S>>
+    ThreadPool<std::vector<match_t<T>>, std::vector<S>, size_t>
     eval_pool (
         [R_index](std::vector<match_t<T>>& matches, std::vector<S>& out, size_t&)
         {
@@ -429,12 +426,12 @@ uint64_t compute_matches(    int R_index,
 }
 
 template<typename T, typename S, typename R, typename DS_L, typename DS_R>
-uint64_t compute_table(    int R_index,
-                        DS_L* L_sort, DS_R* R_sort,
-                        DiskTable<R>* L_tmp, DiskTable<S>* R_tmp = nullptr)
-{
-    Thread<std::vector<T>>
-    L_write (
+uint64_t compute_table(
+    int R_index, DS_L* L_sort, DS_R* R_sort,
+    DiskTable<R>* L_tmp,
+    DiskTable<S>* R_tmp = nullptr
+) {
+    Thread<std::vector<T>> L_write (
         [L_tmp](std::vector<T>& input)
         {
             for (const auto& entry : input) {
@@ -446,8 +443,7 @@ uint64_t compute_table(    int R_index,
         "phase1/write/L"
     );
 
-    Thread<std::vector<S>>
-    R_write (
+    Thread<std::vector<S>> R_write (
         [R_tmp](std::vector<S>& input)
         {
             for (const auto& entry : input) {
@@ -458,21 +454,18 @@ uint64_t compute_table(    int R_index,
     );
 
     const auto begin = get_wall_time_micros();
-    const auto num_matches =
-            phase1::compute_matches<T, S, R>(
-                    R_index, L_sort, R_sort,
-                    L_tmp ? &L_write : nullptr,
-                    R_tmp ? &R_write : nullptr);
+
+    const auto num_matches = compute_matches<T, S, R>(
+        R_index, L_sort, R_sort,
+        L_tmp ? &L_write : nullptr,
+        R_tmp ? &R_write : nullptr
+    );
 
     L_write.close();
     R_write.close();
+    if (L_tmp) L_tmp->close();
+    if (R_tmp) R_tmp->close();
 
-    if (L_tmp) {
-        L_tmp->close();
-    }
-    if (R_tmp) {
-        R_tmp->close();
-    }
     std::cout << "[P1] Table " << R_index << " took " << (get_wall_time_micros() - begin) / 1e6 << " sec"
             << ", found " << num_matches << " matches" << std::endl;
     return num_matches;
