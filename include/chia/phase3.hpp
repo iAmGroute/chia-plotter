@@ -526,10 +526,11 @@ inline void compute(
     uint64_t num_written_final = 0;
 
     {
+        phase2::DiskSortT p2 (32, G_LOG_NUM_BUCKETS, input.dsort[1],               true, false);
         DiskTable<phase2::entry_1> L_table_1(input.table_1);
         DiskSortLP R_sort_lp (63, G_LOG_NUM_BUCKETS, path+"s1t2/", prefix+"s1t2_", false, true);
         compute_stage1<phase2::entry_1, phase2::entry_x, DiskSortNP, phase2::DiskSortT>(
-            1, nullptr, input.sort[1].get(), &R_sort_lp, &L_table_1, input.bitfield_1.get()
+            1, nullptr, &p2, &R_sort_lp, &L_table_1, input.bitfield_1.get()
         );
         input.bitfield_1 = nullptr;
         remove(input.table_1.file_name);
@@ -543,10 +544,11 @@ inline void compute(
     }
 
     {
+        phase2::DiskSortT p2 (32, G_LOG_NUM_BUCKETS, input.dsort[2],               true, false);
         DiskSortNP L_sort_np (32, G_LOG_NUM_BUCKETS, path+"s2t2/", prefix+"s2t2_", true, false);
         DiskSortLP R_sort_lp (63, G_LOG_NUM_BUCKETS, path+"s1t3/", prefix+"s1t3_", false, true);
         compute_stage1<entry_np, phase2::entry_x, DiskSortNP, phase2::DiskSortT>(
-            2, &L_sort_np, input.sort[2].get(), R_sort_lp.get()
+            2, &L_sort_np, &p2, &R_sort_lp
         );
     {
     }
@@ -558,10 +560,11 @@ inline void compute(
     }
 
     {
+        phase2::DiskSortT p2 (32, G_LOG_NUM_BUCKETS, input.dsort[3],               true, false);
         DiskSortNP L_sort_np (32, G_LOG_NUM_BUCKETS, path+"s2t3/", prefix+"s2t3_", true, false);
         DiskSortLP R_sort_lp (63, G_LOG_NUM_BUCKETS, path+"s1t4/", prefix+"s1t4_", false, true);
         compute_stage1<entry_np, phase2::entry_x, DiskSortNP, phase2::DiskSortT>(
-            3, &L_sort_np, input.sort[3].get(), R_sort_lp.get()
+            3, &L_sort_np, &p2, &R_sort_lp
         );
     {
     }
@@ -572,12 +575,12 @@ inline void compute(
         );
     }
 
-
     {
+        phase2::DiskSortT p2 (32, G_LOG_NUM_BUCKETS, input.dsort[4],               true, false);
         DiskSortNP L_sort_np (32, G_LOG_NUM_BUCKETS, path+"s2t4/", prefix+"s2t4_", true, false);
         DiskSortLP R_sort_lp (63, G_LOG_NUM_BUCKETS, path+"s1t5/", prefix+"s1t5_", false, true);
         compute_stage1<entry_np, phase2::entry_x, DiskSortNP, phase2::DiskSortT>(
-            4, &L_sort_np, input.sort[4].get(), R_sort_lp.get()
+            4, &L_sort_np, &p2, &R_sort_lp
         );
     {
     }
@@ -590,10 +593,11 @@ inline void compute(
 
 
     {
+        phase2::DiskSortT p2 (32, G_LOG_NUM_BUCKETS, input.dsort[5],               true, false);
         DiskSortNP L_sort_np (32, G_LOG_NUM_BUCKETS, path+"s2t5/", prefix+"s2t5_", true, false);
         DiskSortLP R_sort_lp (63, G_LOG_NUM_BUCKETS, path+"s1t6/", prefix+"s1t6_", false, true);
         compute_stage1<entry_np, phase2::entry_x, DiskSortNP, phase2::DiskSortT>(
-            5, &L_sort_np, input.sort[5].get(), R_sort_lp.get()
+            5, &L_sort_np, &p2, &R_sort_lp
         );
     {
     }
