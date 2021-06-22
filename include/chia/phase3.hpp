@@ -508,7 +508,7 @@ inline void compute(
     out.params = input.params;
     out.plot_file_name = tree_dir+"f/"+plot_name+".plot.tmp";
 
-    std::cout << "w " << out.plot_file_name << std::endl;
+    // std::cout << "w " << out.plot_file_name << std::endl;
     FILE* plot_file = fopen(out.plot_file_name.c_str(), "wb");
     if (!plot_file) {
         throw std::runtime_error("fopen() failed " + out.plot_file_name);
@@ -630,7 +630,7 @@ inline void compute(
         fwrite_ex(plot_file, tmp, sizeof(tmp));
     }
 
-    std::cout << "c " << out.plot_file_name << std::endl;
+    // std::cout << "c " << out.plot_file_name << std::endl;
     fclose(plot_file);
 
     out.final_pointer_7 = final_pointers[7];

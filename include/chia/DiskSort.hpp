@@ -20,7 +20,7 @@ template<typename T, typename Key>
 void DiskSort<T, Key>::bucket_t::open(const char* mode)
 {
     close();
-    std::cout << mode[0] << " " << file_name << std::endl;
+    // std::cout << mode[0] << " " << file_name << std::endl;
     file = fopen(file_name.c_str(), mode);
     if (!file) {
         throw std::runtime_error("fopen() failed " + file_name);
@@ -44,7 +44,7 @@ template<typename T, typename Key>
 void DiskSort<T, Key>::bucket_t::close()
 {
     if (file) {
-        std::cout << "c " << file_name << std::endl;
+        // std::cout << "c " << file_name << std::endl;
         fclose(file);
         file = nullptr;
     }

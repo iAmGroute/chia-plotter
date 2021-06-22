@@ -265,7 +265,7 @@ inline void compute(
 ) {
     const auto total_begin = get_wall_time_micros();
 
-    std::cout << "R " << input.plot_file_name << std::endl;
+    // std::cout << "R " << input.plot_file_name << std::endl;
     FILE* plot_file = fopen(input.plot_file_name.c_str(), "rb+");
     if (!plot_file) {
         throw std::runtime_error("fopen() failed " + input.plot_file_name);
@@ -276,7 +276,7 @@ inline void compute(
         out.plot_size = compute(plot_file, input.header_size, &p3, input.final_pointer_7, input.num_written_7);
     }
 
-    std::cout << "c " << input.plot_file_name << std::endl;
+    // std::cout << "c " << input.plot_file_name << std::endl;
     fclose(plot_file);
 
     out.params = input.params;
