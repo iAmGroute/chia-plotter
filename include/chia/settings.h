@@ -16,6 +16,8 @@
 constexpr size_t  G_READ_CHUNK_SIZE = 2 * 1024 * 1024; // Bytes of table entries to read at once (per read thread)
 constexpr size_t G_WRITE_CHUNK_SIZE =      256 * 1024; // Bytes of table entries to buffer before write (per bucket)
 
+constexpr size_t G_DT_WRITE_CACHE_SIZE = 16 * 1024 * 1024; // DiskTable's write cache size (bytes)
+
 //
 
 constexpr int G_LOG_NUM_BUCKETS         =  7; // log2 of number of buckets in DiskSort

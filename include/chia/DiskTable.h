@@ -159,7 +159,7 @@ private:
     std::string file_name;
     size_t num_entries;
 
-    write_buffer_t<T> cache;
+    byte_buffer_t<T, G_DT_WRITE_CACHE_SIZE> cache;
     FILE* file_out = nullptr;
 
 };
