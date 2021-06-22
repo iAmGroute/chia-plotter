@@ -103,6 +103,7 @@ DiskSort<T, Key>::DiskSort(
     log_num_buckets(log_num_buckets),
     bucket_key_shift(key_size - log_num_buckets),
     path(path),
+    prefix(prefix),
     keep_files(keep_files),
     buckets(1 << log_num_buckets)
 {
