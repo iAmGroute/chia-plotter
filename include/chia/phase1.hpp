@@ -479,16 +479,16 @@ uint64_t compute_table(    int R_index,
 }
 
 inline void compute(
-    const input_t&    input,
-          output_t&   out,
-    const std::string plot_name,
-    const std::string tmp_dir
+    const          input_t& input,
+                  output_t& out,
+    const std::string       plot_name,
+    const std::string       tree_dir
 ) {
     const auto total_begin = get_wall_time_micros();
 
     initialize();
 
-    const std::string path   = tmp_dir   + "p1/";
+    const std::string path   = tree_dir   + "p1/";
     const std::string prefix = plot_name + "_p1_";
 
     DiskSort1 sort_1(32+kExtraBits, G_LOG_NUM_BUCKETS, path+"t1/", prefix+"t1_");     compute_f1(input.id.data(), &sort_1);

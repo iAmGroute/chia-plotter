@@ -261,7 +261,7 @@ inline void compute(
     const phase3::output_t& input,
                   output_t& out,
     const std::string       plot_name,
-    const std::string       tmp_dir
+    const std::string       tree_dir
 ) {
     const auto total_begin = get_wall_time_micros();
 
@@ -278,7 +278,7 @@ inline void compute(
     fclose(plot_file);
 
     out.params = input.params;
-    out.plot_file_name = tmp_dir+"f/"+plot_name+".plot";
+    out.plot_file_name = tree_dir+"f/"+plot_name+".plot";
 
     std::cout << "mv " << input.plot_file_name << " " << out.plot_file_name << std::endl;
     std::rename(input.plot_file_name.c_str(), out.plot_file_name.c_str());

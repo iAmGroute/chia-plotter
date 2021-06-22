@@ -144,11 +144,11 @@ inline void compute(
     const phase1::output_t& input,
                   output_t& out,
     const std::string       plot_name,
-    const std::string       tmp_dir
+    const std::string       tree_dir
 ) {
     const auto total_begin = get_wall_time_micros();
 
-    const std::string path   = tmp_dir   + "p2/";
+    const std::string path   = tree_dir  + "p2/";
     const std::string prefix = plot_name + "_p2_";
 
     size_t max_table_size = 0;

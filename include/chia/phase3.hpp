@@ -502,15 +502,15 @@ inline void compute(
           phase2::output_t& input,
                   output_t& out,
     const std::string       plot_name,
-    const std::string       tmp_dir
+    const std::string       tree_dir
 ) {
     const auto total_begin = get_wall_time_micros();
 
-    const std::string path   = tmp_dir   + "p3/";
+    const std::string path   = tree_dir  + "p3/";
     const std::string prefix = plot_name + "_p3_";
 
     out.params = input.params;
-    out.plot_file_name = tmp_dir+"f/"+plot_name+".plot.tmp";
+    out.plot_file_name = tree_dir+"f/"+plot_name+".plot.tmp";
 
     std::cout << "w " << out.plot_file_name << std::endl;
     FILE* plot_file = fopen(out.plot_file_name.c_str(), "wb");
