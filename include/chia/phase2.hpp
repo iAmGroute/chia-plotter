@@ -171,12 +171,12 @@ inline void compute(
     {
         std::swap(curr_bitfield, next_bitfield);
         auto t_string = "t" + std::to_string(i+1);
-        out.sort[i] = std::make_shared<DiskSortT>(32, G_LOG_NUM_BUCKETS, path+t_string+"/", prefix+t_string+"_");
-
+        DiskSortT dsort (32, G_LOG_NUM_BUCKETS, path+t_string+"/", prefix+t_string+"_", false, true);
         compute_table<phase1::tmp_entry_x, entry_x, DiskSortT>(
-            i + 1, out.sort[i].get(), nullptr, input.table[i], next_bitfield.get(), curr_bitfield.get());
-
+            i + 1, &dsort, nullptr, input.table[i], next_bitfield.get(), curr_bitfield.get()
+        );
         remove(input.table[i].file_name);
+        out.dsort[i] = dsort.get_info();
     }
 
     out.bitfield_1 = next_bitfield;

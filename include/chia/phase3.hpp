@@ -521,57 +521,107 @@ inline void compute(
 
     uint64_t num_written_final = 0;
 
-    DiskTable<phase2::entry_1> L_table_1(input.table_1);
-
-    auto R_sort_lp = std::make_shared<DiskSortLP>(
-            63, G_LOG_NUM_BUCKETS, path+"s1t2/", prefix+"s1t2_");
-
-    compute_stage1<phase2::entry_1, phase2::entry_x, DiskSortNP, phase2::DiskSortT>(
-            1, nullptr, input.sort[1].get(), R_sort_lp.get(), &L_table_1, input.bitfield_1.get());
-
-    input.bitfield_1 = nullptr;
-    remove(input.table_1.file_name);
-
-    auto L_sort_np = std::make_shared<DiskSortNP>(
-            32, G_LOG_NUM_BUCKETS, path+"s2t2/", prefix+"s2t2_");
-
-    num_written_final += compute_stage2(
-            1, R_sort_lp.get(), L_sort_np.get(),
-            plot_file, final_pointers[1], &final_pointers[2]);
-
-    for (int L_index = 2; L_index < 6; ++L_index)
     {
-        auto t_string = "t" + std::to_string(L_index+1);
-
-        R_sort_lp = std::make_shared<DiskSortLP>(
-                63, G_LOG_NUM_BUCKETS, path+"s1"+t_string+"/", prefix+"s1"+t_string+"_");
-
-        compute_stage1<entry_np, phase2::entry_x, DiskSortNP, phase2::DiskSortT>(
-                L_index, L_sort_np.get(), input.sort[L_index].get(), R_sort_lp.get());
-
-        L_sort_np = std::make_shared<DiskSortNP>(
-                32, G_LOG_NUM_BUCKETS, path+"s2"+t_string+"/", prefix+"s2"+t_string+"_");
-
+        phase2::DiskSortT p2 (32, G_LOG_NUM_BUCKETS, input.dsort[1],               true, false);
+        DiskTable<phase2::entry_1> L_table_1(input.table_1);
+        DiskSortLP R_sort_lp (63, G_LOG_NUM_BUCKETS, path+"s1t2/", prefix+"s1t2_", false, true);
+        compute_stage1<phase2::entry_1, phase2::entry_x, DiskSortNP, phase2::DiskSortT>(
+            1, nullptr, &p2, &R_sort_lp, &L_table_1, input.bitfield_1.get()
+        );
+        input.bitfield_1 = nullptr;
+        remove(input.table_1.file_name);
+    }
+    {
+        DiskSortLP R_sort_lp (63, G_LOG_NUM_BUCKETS, path+"s1t2/", prefix+"s1t2_", true, false);
+        DiskSortNP L_sort_np (32, G_LOG_NUM_BUCKETS, path+"s2t2/", prefix+"s2t2_", false, true);
         num_written_final += compute_stage2(
-                L_index, R_sort_lp.get(), L_sort_np.get(),
-                plot_file, final_pointers[L_index], &final_pointers[L_index + 1]);
+            1, &R_sort_lp, &L_sort_np, plot_file, final_pointers[1], &final_pointers[2]
+        );
     }
 
-    DiskTable<phase2::entry_7> R_table_7(input.table_7);
+    {
+        phase2::DiskSortT p2 (32, G_LOG_NUM_BUCKETS, input.dsort[2],               true, false);
+        DiskSortNP L_sort_np (32, G_LOG_NUM_BUCKETS, path+"s2t2/", prefix+"s2t2_", true, false);
+        DiskSortLP R_sort_lp (63, G_LOG_NUM_BUCKETS, path+"s1t3/", prefix+"s1t3_", false, true);
+        compute_stage1<entry_np, phase2::entry_x, DiskSortNP, phase2::DiskSortT>(
+            2, &L_sort_np, &p2, &R_sort_lp
+        );
+    }
+    {
+        DiskSortLP R_sort_lp (63, G_LOG_NUM_BUCKETS, path+"s1t3/", prefix+"s1t3_", true, false);
+        DiskSortNP L_sort_np (32, G_LOG_NUM_BUCKETS, path+"s2t3/", prefix+"s2t3_", false, true);
+        num_written_final += compute_stage2(
+            2, &R_sort_lp, &L_sort_np, plot_file, final_pointers[2], &final_pointers[3]
+        );
+    }
 
-    R_sort_lp = std::make_shared<DiskSortLP>(63, G_LOG_NUM_BUCKETS, path+"s1t7/", prefix+"s1t7_");
+    {
+        phase2::DiskSortT p2 (32, G_LOG_NUM_BUCKETS, input.dsort[3],               true, false);
+        DiskSortNP L_sort_np (32, G_LOG_NUM_BUCKETS, path+"s2t3/", prefix+"s2t3_", true, false);
+        DiskSortLP R_sort_lp (63, G_LOG_NUM_BUCKETS, path+"s1t4/", prefix+"s1t4_", false, true);
+        compute_stage1<entry_np, phase2::entry_x, DiskSortNP, phase2::DiskSortT>(
+            3, &L_sort_np, &p2, &R_sort_lp
+        );
+    }
+    {
+        DiskSortLP R_sort_lp (63, G_LOG_NUM_BUCKETS, path+"s1t4/", prefix+"s1t4_", true, false);
+        DiskSortNP L_sort_np (32, G_LOG_NUM_BUCKETS, path+"s2t4/", prefix+"s2t4_", false, true);
+        num_written_final += compute_stage2(
+            3, &R_sort_lp, &L_sort_np, plot_file, final_pointers[3], &final_pointers[4]
+        );
+    }
 
-    compute_stage1<entry_np, phase2::entry_7, DiskSortNP, phase2::DiskSort7>(
-            6, L_sort_np.get(), nullptr, R_sort_lp.get(), nullptr, nullptr, &R_table_7);
+    {
+        phase2::DiskSortT p2 (32, G_LOG_NUM_BUCKETS, input.dsort[4],               true, false);
+        DiskSortNP L_sort_np (32, G_LOG_NUM_BUCKETS, path+"s2t4/", prefix+"s2t4_", true, false);
+        DiskSortLP R_sort_lp (63, G_LOG_NUM_BUCKETS, path+"s1t5/", prefix+"s1t5_", false, true);
+        compute_stage1<entry_np, phase2::entry_x, DiskSortNP, phase2::DiskSortT>(
+            4, &L_sort_np, &p2, &R_sort_lp
+        );
+    }
+    {
+        DiskSortLP R_sort_lp (63, G_LOG_NUM_BUCKETS, path+"s1t5/", prefix+"s1t5_", true, false);
+        DiskSortNP L_sort_np (32, G_LOG_NUM_BUCKETS, path+"s2t5/", prefix+"s2t5_", false, true);
+        num_written_final += compute_stage2(
+            4, &R_sort_lp, &L_sort_np, plot_file, final_pointers[4], &final_pointers[5]
+        );
+    }
 
-    remove(input.table_7.file_name);
 
-    L_sort_np = std::make_shared<DiskSortNP>(32, G_LOG_NUM_BUCKETS, path+"s2t7/", prefix+"s2t7_");
+    {
+        phase2::DiskSortT p2 (32, G_LOG_NUM_BUCKETS, input.dsort[5],               true, false);
+        DiskSortNP L_sort_np (32, G_LOG_NUM_BUCKETS, path+"s2t5/", prefix+"s2t5_", true, false);
+        DiskSortLP R_sort_lp (63, G_LOG_NUM_BUCKETS, path+"s1t6/", prefix+"s1t6_", false, true);
+        compute_stage1<entry_np, phase2::entry_x, DiskSortNP, phase2::DiskSortT>(
+            5, &L_sort_np, &p2, &R_sort_lp
+        );
+    }
+    {
+        DiskSortLP R_sort_lp (63, G_LOG_NUM_BUCKETS, path+"s1t6/", prefix+"s1t6_", true, false);
+        DiskSortNP L_sort_np (32, G_LOG_NUM_BUCKETS, path+"s2t6/", prefix+"s2t6_", false, true);
+        num_written_final += compute_stage2(
+            5, &R_sort_lp, &L_sort_np, plot_file, final_pointers[5], &final_pointers[6]
+        );
+    }
 
-    const auto num_written_final_7 = compute_stage2(
-            6, R_sort_lp.get(), L_sort_np.get(),
-            plot_file, final_pointers[6], &final_pointers[7]);
-    num_written_final += num_written_final_7;
+    {
+        DiskTable<phase2::entry_7> R_table_7(input.table_7);
+        DiskSortNP L_sort_np (32, G_LOG_NUM_BUCKETS, path+"s2t6/", prefix+"s2t6_", true, false);
+        DiskSortLP R_sort_lp (63, G_LOG_NUM_BUCKETS, path+"s1t7/", prefix+"s1t7_", false, true);
+        compute_stage1<entry_np, phase2::entry_7, DiskSortNP, phase2::DiskSort7>(
+            6, &L_sort_np, nullptr, &R_sort_lp, nullptr, nullptr, &R_table_7
+        );
+        remove(input.table_7.file_name);
+    }
+    {
+        DiskSortLP R_sort_lp (63, G_LOG_NUM_BUCKETS, path+"s1t7/", prefix+"s1t7_", true, false);
+        DiskSortNP L_sort_np (32, G_LOG_NUM_BUCKETS, path+"s2t7/", prefix+"s2t7_", false, true);
+        out.num_written_7 = compute_stage2(
+            6, &R_sort_lp, &L_sort_np, plot_file, final_pointers[6], &final_pointers[7]
+        );
+        num_written_final += out.num_written_7;
+        out.sort_7 = L_sort_np.get_info();
+    }
 
     fseek_set(plot_file, out.header_size - 10 * 8);
     for (size_t i = 1; i < final_pointers.size(); ++i) {
@@ -579,11 +629,10 @@ inline void compute(
         Util::IntToEightBytes(tmp, final_pointers[i]);
         fwrite_ex(plot_file, tmp, sizeof(tmp));
     }
+
     std::cout << "c " << out.plot_file_name << std::endl;
     fclose(plot_file);
 
-    out.sort_7 = L_sort_np;
-    out.num_written_7 = num_written_final_7;
     out.final_pointer_7 = final_pointers[7];
 
     std::cout << "Phase 3 took " << (get_wall_time_micros() - total_begin) / 1e6 << " sec"

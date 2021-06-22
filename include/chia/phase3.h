@@ -98,7 +98,7 @@ struct output_t {
     uint64_t final_pointer_7 = 0;
     phase1::input_t params;
     std::string plot_file_name;
-    std::shared_ptr<DiskSortNP> sort_7;
+    dsort_t sort_7;
 };
 
 

@@ -485,45 +485,53 @@ inline void compute(
 
     out.params = input;
 
-    auto sort_1 = new DiskSort1 (32+kExtraBits, G_LOG_NUM_BUCKETS, path+"t1/", prefix+"t1_");
-    compute_f1(input.id.data(), sort_1);
-
-    auto tmp_1  = new DiskTable<tmp_entry_1> (                     path+"t1f/"+prefix+"t1f.tmp");
-    auto sort_2 = new DiskSort2 (32+kExtraBits, G_LOG_NUM_BUCKETS, path+"t2/", prefix+"t2_");
-    compute_table<entry_1, entry_2, tmp_entry_1>(2, sort_1, sort_2, tmp_1);
-    delete sort_1;
-    out.table[0] = tmp_1->get_info(); delete tmp_1;
-
-    auto tmp_2  = new DiskTable<tmp_entry_x> (                     path+"t2f/"+prefix+"t2f.tmp");
-    auto sort_3 = new DiskSort3 (32+kExtraBits, G_LOG_NUM_BUCKETS, path+"t3/", prefix+"t3_");
-    compute_table<entry_2, entry_3, tmp_entry_x>(3, sort_2, sort_3, tmp_2);
-    delete sort_2;
-    out.table[1] = tmp_2->get_info(); delete tmp_2;
-
-    auto tmp_3  = new DiskTable<tmp_entry_x> (                     path+"t3f/"+prefix+"t3f.tmp");
-    auto sort_4 = new DiskSort4 (32+kExtraBits, G_LOG_NUM_BUCKETS, path+"t4/", prefix+"t4_");
-    compute_table<entry_3, entry_4, tmp_entry_x>(4, sort_3, sort_4, tmp_3);
-    delete sort_3;
-    out.table[2] = tmp_3->get_info(); delete tmp_3;
-
-    auto tmp_4  = new DiskTable<tmp_entry_x> (                     path+"t4f/"+prefix+"t4f.tmp");
-    auto sort_5 = new DiskSort5 (32+kExtraBits, G_LOG_NUM_BUCKETS, path+"t5/", prefix+"t5_");
-    compute_table<entry_4, entry_5, tmp_entry_x>(5, sort_4, sort_5, tmp_4);
-    delete sort_4;
-    out.table[3] = tmp_4->get_info(); delete tmp_4;
-
-    auto tmp_5  = new DiskTable<tmp_entry_x> (                     path+"t5f/"+prefix+"t5f.tmp");
-    auto sort_6 = new DiskSort6 (32+kExtraBits, G_LOG_NUM_BUCKETS, path+"t6/", prefix+"t6_");
-    compute_table<entry_5, entry_6, tmp_entry_x>(6, sort_5, sort_6, tmp_5);
-    delete sort_5;
-    out.table[4] = tmp_5->get_info(); delete tmp_5;
-
-    auto tmp_6  = new DiskTable<tmp_entry_x> (                     path+"t6f/"+prefix+"t6f.tmp");
-    auto tmp_7  = new DiskTable<entry_7>     (                     path+"t7f/"+prefix+"t7f.tmp");
-    compute_table<entry_6, entry_7, tmp_entry_x, DiskSort6, DiskSort7>(7, sort_6, nullptr, tmp_6, tmp_7);
-    delete sort_6;
-    out.table[5] = tmp_6->get_info(); delete tmp_6;
-    out.table[6] = tmp_7->get_info(); delete tmp_7;
+    {
+        DiskSort1 sort_1 (32+kExtraBits, G_LOG_NUM_BUCKETS, path+"t1/", prefix+"t1_", false, true);
+        compute_f1(input.id.data(), &sort_1);
+    }
+    {
+        DiskSort1 sort_1 (32+kExtraBits, G_LOG_NUM_BUCKETS, path+"t1/", prefix+"t1_", true, false);
+        DiskSort2 sort_2 (32+kExtraBits, G_LOG_NUM_BUCKETS, path+"t2/", prefix+"t2_", false, true);
+        DiskTable<tmp_entry_1> tmp_1 (                      path+"t1f/"+prefix+"t1f.tmp");
+        compute_table<entry_1, entry_2, tmp_entry_1>(2, &sort_1, &sort_2, &tmp_1);
+        out.table[0] = tmp_1.get_info();
+    }
+    {
+        DiskSort2 sort_2 (32+kExtraBits, G_LOG_NUM_BUCKETS, path+"t2/", prefix+"t2_", true, false);
+        DiskSort3 sort_3 (32+kExtraBits, G_LOG_NUM_BUCKETS, path+"t3/", prefix+"t3_", false, true);
+        DiskTable<tmp_entry_x> tmp_2 (                      path+"t2f/"+prefix+"t2f.tmp");
+        compute_table<entry_2, entry_3, tmp_entry_x>(3, &sort_2, &sort_3, &tmp_2);
+        out.table[1] = tmp_2.get_info();
+    }
+    {
+        DiskSort3 sort_3 (32+kExtraBits, G_LOG_NUM_BUCKETS, path+"t3/", prefix+"t3_", true, false);
+        DiskSort4 sort_4 (32+kExtraBits, G_LOG_NUM_BUCKETS, path+"t4/", prefix+"t4_", false, true);
+        DiskTable<tmp_entry_x> tmp_3 (                      path+"t3f/"+prefix+"t3f.tmp");
+        compute_table<entry_3, entry_4, tmp_entry_x>(4, &sort_3, &sort_4, &tmp_3);
+        out.table[2] = tmp_3.get_info();
+    }
+    {
+        DiskSort4 sort_4 (32+kExtraBits, G_LOG_NUM_BUCKETS, path+"t4/", prefix+"t4_", true, false);
+        DiskSort5 sort_5 (32+kExtraBits, G_LOG_NUM_BUCKETS, path+"t5/", prefix+"t5_", false, true);
+        DiskTable<tmp_entry_x> tmp_4 (                      path+"t4f/"+prefix+"t4f.tmp");
+        compute_table<entry_4, entry_5, tmp_entry_x>(5, &sort_4, &sort_5, &tmp_4);
+        out.table[3] = tmp_4.get_info();
+    }
+    {
+        DiskSort5 sort_5 (32+kExtraBits, G_LOG_NUM_BUCKETS, path+"t5/", prefix+"t5_", true, false);
+        DiskSort6 sort_6 (32+kExtraBits, G_LOG_NUM_BUCKETS, path+"t6/", prefix+"t6_", false, true);
+        DiskTable<tmp_entry_x> tmp_5 (                      path+"t5f/"+prefix+"t5f.tmp");
+        compute_table<entry_5, entry_6, tmp_entry_x>(6, &sort_5, &sort_6, &tmp_5);
+        out.table[4] = tmp_5.get_info();
+    }
+    {
+        DiskSort6 sort_6 (32+kExtraBits, G_LOG_NUM_BUCKETS, path+"t6/", prefix+"t6_", true, false);
+        DiskTable<tmp_entry_x> tmp_6 (                      path+"t6f/"+prefix+"t6f.tmp");
+        DiskTable<entry_7>     tmp_7 (                      path+"t7f/"+prefix+"t7f.tmp");
+        compute_table<entry_6, entry_7, tmp_entry_x, DiskSort6, DiskSort7>(7, &sort_6, nullptr, &tmp_6, &tmp_7);
+        out.table[5] = tmp_6.get_info();
+        out.table[6] = tmp_7.get_info();
+    }
 
     std::cout << "Phase 1 took " << (get_wall_time_micros() - total_begin) / 1e6 << " sec" << std::endl;
 }
