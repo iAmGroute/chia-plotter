@@ -208,8 +208,6 @@ void compute_stage1(int L_index,
     R_sort_read.join();
     R_add_2.close();
 
-    R_sort_2->finish();
-
     std::cout << "[P3-1] Table " << L_index + 1 << " took "
                 << (get_wall_time_micros() - begin) / 1e6 << " sec"
                 << ", wrote " << R_num_write << " right entries" << std::endl;
@@ -480,8 +478,6 @@ uint64_t compute_stage2(int L_index,
     park_threads.close();
     park_write.close();
     L_add.close();
-
-    L_sort->finish();
 
     if (R_final_begin) {
         *R_final_begin = L_final_begin + park.index * park_size_bytes;

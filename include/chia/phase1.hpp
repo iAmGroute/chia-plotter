@@ -287,7 +287,6 @@ void compute_f1(const uint8_t* id, DS* T1_sort)
     }
     pool.close();
     output.close();
-    T1_sort->finish();
 
     std::cout << "[P1] Table 1 took " << (get_wall_time_micros() - begin) / 1e6 << " sec" << std::endl;
 }
@@ -418,9 +417,6 @@ uint64_t compute_matches(
     eval_pool.close();
     R_add.close();
 
-    if (R_sort) {
-        R_sort->finish();
-    }
     if (num_written < num_found) {
         std::cout << "[P1] Lost " << num_found - num_written
                 << " matches due to 32-bit overflow." << std::endl;

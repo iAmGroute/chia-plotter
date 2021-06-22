@@ -128,12 +128,8 @@ void compute_table(
     R_write.close();
     R_add.close();
 
-    if (R_sort) {
-        R_sort->finish();
-    }
-    if (R_file) {
-        R_file->flush();
-    }
+    if (R_file) R_file->close();
+
     std::cout << "[P2] Table " << R_index << " rewrite took "
                 << (get_wall_time_micros() - begin) / 1e6 << " sec"
                 << ", dropped " << R_table.num_entries - num_written << " entries"
@@ -166,7 +162,6 @@ inline void compute(
     {
         DiskTable<entry_7> table_7(path+"t7f/"+prefix+"t7f.tmp");
         compute_table<entry_7, entry_7, DiskSort7>(7, nullptr, &table_7, input.table[6], next_bitfield.get(), nullptr);
-        table_7.close();
         out.table_7 = table_7.get_info();
     }
 
