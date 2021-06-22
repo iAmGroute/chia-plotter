@@ -151,6 +151,9 @@ inline void compute(
     const std::string path   = tree_dir  + "p2/";
     const std::string prefix = plot_name + "_p2_";
 
+    out.params = input.params;
+    out.table_1 = input.table[0];
+
     size_t max_table_size = 0;
     for (const auto& table : input.table) {
         max_table_size = std::max(max_table_size, table.num_entries);
@@ -160,12 +163,13 @@ inline void compute(
     auto curr_bitfield = std::make_shared<bitfield>(max_table_size);
     auto next_bitfield = std::make_shared<bitfield>(max_table_size);
 
-    DiskTable<entry_7> table_7(path+"t7f/"+prefix+"t7f.tmp");
+    {
+        DiskTable<entry_7> table_7(path+"t7f/"+prefix+"t7f.tmp");
+        compute_table<entry_7, entry_7, DiskSort7>(7, nullptr, &table_7, input.table[6], next_bitfield.get(), nullptr);
+        table_7.close();
+        out.table_7 = table_7.get_info();
+    }
 
-    compute_table<entry_7, entry_7, DiskSort7>(
-            7, nullptr, &table_7, input.table[6], next_bitfield.get(), nullptr);
-
-    table_7.close();
     remove(input.table[6].file_name);
 
     for (int i = 5; i >= 1; i -= 1)
@@ -180,9 +184,6 @@ inline void compute(
         remove(input.table[i].file_name);
     }
 
-    out.params = input.params;
-    out.table_1 = input.table[0];
-    out.table_7 = table_7.get_info();
     out.bitfield_1 = next_bitfield;
 
     std::cout << "Phase 2 took " << (get_wall_time_micros() - total_begin) / 1e6 << " sec" << std::endl;
