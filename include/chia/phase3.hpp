@@ -208,8 +208,6 @@ void compute_stage1(int L_index,
     R_sort_read.join();
     R_add_2.close();
 
-    R_sort_2->finish();
-
     std::cout << "[P3-1] Table " << L_index + 1 << " took "
                 << (get_wall_time_micros() - begin) / 1e6 << " sec"
                 << ", wrote " << R_num_write << " right entries" << std::endl;
@@ -481,8 +479,6 @@ uint64_t compute_stage2(int L_index,
     park_write.close();
     L_add.close();
 
-    L_sort->finish();
-
     if (R_final_begin) {
         *R_final_begin = L_final_begin + park.index * park_size_bytes;
     }
@@ -550,8 +546,8 @@ inline void compute(
         compute_stage1<entry_np, phase2::entry_x, DiskSortNP, phase2::DiskSortT>(
             2, &L_sort_np, &p2, &R_sort_lp
         );
-    {
     }
+    {
         DiskSortLP R_sort_lp (63, G_LOG_NUM_BUCKETS, path+"s1t3/", prefix+"s1t3_", true, false);
         DiskSortNP L_sort_np (32, G_LOG_NUM_BUCKETS, path+"s2t3/", prefix+"s2t3_", false, true);
         num_written_final += compute_stage2(
@@ -566,8 +562,8 @@ inline void compute(
         compute_stage1<entry_np, phase2::entry_x, DiskSortNP, phase2::DiskSortT>(
             3, &L_sort_np, &p2, &R_sort_lp
         );
-    {
     }
+    {
         DiskSortLP R_sort_lp (63, G_LOG_NUM_BUCKETS, path+"s1t4/", prefix+"s1t4_", true, false);
         DiskSortNP L_sort_np (32, G_LOG_NUM_BUCKETS, path+"s2t4/", prefix+"s2t4_", false, true);
         num_written_final += compute_stage2(
@@ -582,8 +578,8 @@ inline void compute(
         compute_stage1<entry_np, phase2::entry_x, DiskSortNP, phase2::DiskSortT>(
             4, &L_sort_np, &p2, &R_sort_lp
         );
-    {
     }
+    {
         DiskSortLP R_sort_lp (63, G_LOG_NUM_BUCKETS, path+"s1t5/", prefix+"s1t5_", true, false);
         DiskSortNP L_sort_np (32, G_LOG_NUM_BUCKETS, path+"s2t5/", prefix+"s2t5_", false, true);
         num_written_final += compute_stage2(
@@ -599,8 +595,8 @@ inline void compute(
         compute_stage1<entry_np, phase2::entry_x, DiskSortNP, phase2::DiskSortT>(
             5, &L_sort_np, &p2, &R_sort_lp
         );
-    {
     }
+    {
         DiskSortLP R_sort_lp (63, G_LOG_NUM_BUCKETS, path+"s1t6/", prefix+"s1t6_", true, false);
         DiskSortNP L_sort_np (32, G_LOG_NUM_BUCKETS, path+"s2t6/", prefix+"s2t6_", false, true);
         num_written_final += compute_stage2(

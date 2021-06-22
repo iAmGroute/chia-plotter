@@ -271,8 +271,10 @@ inline void compute(
         throw std::runtime_error("fopen() failed " + input.plot_file_name);
     }
 
-    out.plot_size = compute(plot_file, input.header_size, input.sort_7.get(),
-                            input.final_pointer_7, input.num_written_7);
+    {
+        phase3::DiskSortNP p3 (32, G_LOG_NUM_BUCKETS, input.sort_7, true, false);
+        out.plot_size = compute(plot_file, input.header_size, &p3, input.final_pointer_7, input.num_written_7);
+    }
 
     std::cout << "c " << input.plot_file_name << std::endl;
     fclose(plot_file);

@@ -56,6 +56,13 @@ public:
         std::string path, std::string prefix,
         bool read_only, bool keep_files
     );
+    DiskSort(
+        int key_size, int log_num_buckets,
+        const dsort_t& info,
+        bool read_only, bool keep_files
+    ) :
+        DiskSort(key_size, log_num_buckets, info.path, info.prefix, read_only, keep_files)
+    {}
 
     ~DiskSort() {
         close();
@@ -63,6 +70,13 @@ public:
 
     DiskSort(DiskSort&) = delete;
     DiskSort& operator=(DiskSort&) = delete;
+
+    dsort_t get_info() const {
+        return dsort_t {
+            .path   = path,
+            .prefix = prefix
+        };
+    }
 
     void read(    Processor<std::pair<std::vector<T>, size_t>>* output,
                 int num_threads, int num_threads_read = -1);
@@ -90,6 +104,7 @@ private:
     const int log_num_buckets = 0;
     const int bucket_key_shift = 0;
     const std::string path;
+    const std::string prefix;
     const bool keep_files = false;
 
     std::vector<bucket_t> buckets;

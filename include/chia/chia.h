@@ -77,8 +77,8 @@ struct table_t {
     size_t num_entries = 0;
 };
 struct dsort_t {
-    std::string file_name;
-    size_t num_entries = 0;
+    std::string path;
+    std::string prefix;
 };
 
 

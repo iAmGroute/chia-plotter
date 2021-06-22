@@ -414,9 +414,6 @@ uint64_t compute_matches(
     eval_pool.close();
     R_add.close();
 
-    if (R_sort) {
-        R_sort->finish();
-    }
     if (num_written < num_found) {
         std::cout << "[P1] Lost " << num_found - num_written
                 << " matches due to 32-bit overflow." << std::endl;

@@ -84,7 +84,11 @@ void compute_table(
         nullptr, G_P2_P2_WRITE_THREADS, "phase2/add"
     );
 
-    Processor<std::vector<S>>* R_out = R_file ? &R_write : &R_add;
+    // Processor<std::vector<S>>* R_out = R_file ? &R_write : &R_add;
+    Processor<std::vector<S>>* R_out = &R_add;
+    if (R_file) {
+        R_out = &R_write;
+    }
 
     Thread<std::vector<S>> R_count (
         [R_out, &num_written](std::vector<S>& input)
