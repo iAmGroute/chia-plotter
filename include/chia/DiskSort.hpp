@@ -37,6 +37,7 @@ void DiskSort<T, Key>::bucket_t::write(const void* data, size_t count)
         }
         num_entries += count;
     }
+    else throw std::logic_error("write() on readonly DiskSort");
 }
 
 template<typename T, typename Key>
@@ -119,9 +120,6 @@ DiskSort<T, Key>::DiskSort(
 template<typename T, typename Key>
 void DiskSort<T, Key>::write(size_t index, const void* data, size_t count)
 {
-    if (is_finished) {
-        throw std::logic_error("read only");
-    }
     if (index >= buckets.size()) {
         throw std::logic_error("bucket index out of range");
     }
