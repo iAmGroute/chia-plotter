@@ -159,8 +159,7 @@ void DiskSort<T, Key>::read(Processor<std::pair<std::vector<T>, size_t>>* output
         output, num_threads, "Disk/sort"
     );
 
-    Thread<std::vector<std::pair<std::vector<T>, size_t>>>
-    sort_thread (
+    Thread<std::vector<std::pair<std::vector<T>, size_t>>> sort_thread (
         [&sort_pool](std::vector<std::pair<std::vector<T>, size_t>>& input)
         {
             for (auto& block : input) {

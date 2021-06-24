@@ -361,7 +361,7 @@ uint64_t compute_matches(
     );
 
     Thread<std::pair<std::vector<T>, size_t>> read_thread (
-        [&L_index, &L_offset, &L_bucket, &avg_bucket_size, &match_pool, L_tmp_out] (std::pair<std::vector<T>, size_t>& input)
+        [&L_index, &L_offset, &L_bucket, &avg_bucket_size, &match_pool, L_tmp_out](std::pair<std::vector<T>, size_t>& input)
         {
             std::vector<match_input_t> out;
             out.reserve(1024);
@@ -381,8 +381,9 @@ uint64_t compute_matches(
                     L_index[0] = index;
                     L_offset[1] = L_offset[0];
                     if (auto bucket = L_bucket[0]) {
-                        L_offset[0] += bucket->size();
-                        avg_bucket_size = avg_bucket_size * 0.99 + bucket->size() * 0.01;
+                        auto s = bucket->size();
+                        L_offset[0] += s;
+                        avg_bucket_size = avg_bucket_size * 0.99 + s * 0.01;
                     }
                     L_bucket[1] = L_bucket[0];
                     L_bucket[0] = nullptr;
