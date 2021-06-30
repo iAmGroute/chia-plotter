@@ -14,18 +14,64 @@
 #include <bls.hpp>
 #include <sodium.h>
 #include <cxxopts.hpp>
+#include <libbech32.h>
 
 #include <string>
 
 #include <unistd.h>
 #include <sys/resource.h>
 
+std::vector<uint8_t> bech32_address_decode(const std::string& addr) {
+    const auto res = bech32::decode(addr);
+    if(res.hrp != "xch") {
+        throw std::logic_error("invalid contract address (!xch): " + addr);
+    }
+    if(res.dp.size() != 52) {
+        throw std::logic_error("invalid contract address (size != 52): " + addr);
+    }
+    Bits bits;
+    for(int i = 0; i < 51; ++i) {
+        bits.AppendValue(res.dp[i], 5);
+    }
+    bits.AppendValue(res.dp[51] >> 4, 1);
+    if(bits.GetSize() != 32 * 8) {
+        throw std::logic_error("invalid contract address (bits != 256): " + addr);
+    }
+    std::vector<uint8_t> hash(32);
+    bits.ToBytes(hash.data());
+    return hash;
+}
+
+bls::G1Element calc_plot_key(bool have_puzzle, const bls::G1Element local_key, const bls::G1Element farmer_key) {
+    if (have_puzzle) {
+        vector<uint8_t> bytes = (local_key + farmer_key).Serialize();
+        {
+            const auto more_bytes = local_key.Serialize();
+            bytes.insert(bytes.end(), more_bytes.begin(), more_bytes.end());
+        }
+        {
+            const auto more_bytes = farmer_key.Serialize();
+            bytes.insert(bytes.end(), more_bytes.begin(), more_bytes.end());
+        }
+        std::vector<uint8_t> hash(32);
+        bls::Util::Hash256(hash.data(), bytes.data(), bytes.size());
+
+        const auto taproot_sk = MPL.KeyGen(hash);
+        return local_key + farmer_key + taproot_sk.GetG1Element();
+    }
+    else {
+        return local_key + farmer_key;
+    }
+}
+
 inline phase4::output_t create_plot(
     const std::string&     tree_dir,
     const vector<uint8_t>& pool_key_bytes,
+    const vector<uint8_t>& puzzle_hash_bytes,
     const vector<uint8_t>& farmer_key_bytes
 ) {
     const auto total_begin = get_wall_time_micros();
+    const bool have_puzzle = !puzzle_hash_bytes.empty();
 
     std::cout << "Settings file: " << SETTINGS_FILE << std::endl
     std::cout << "Process ID: " << getpid() << std::endl;
@@ -35,7 +81,7 @@ inline phase4::output_t create_plot(
     bls::G1Element pool_key;
     bls::G1Element farmer_key;
     try {
-        pool_key = bls::G1Element::FromByteVector(pool_key_bytes);
+        if (not have_puzzle) pool_key = bls::G1Element::FromByteVector(pool_key_bytes);
     } catch(std::exception& ex) {
         std::cout << "Invalid pool_key: " << bls::Util::HexStr(pool_key_bytes) << std::endl;
         throw;
@@ -46,8 +92,9 @@ inline phase4::output_t create_plot(
         std::cout << "Invalid farmer_key: " << bls::Util::HexStr(farmer_key_bytes) << std::endl;
         throw;
     }
-    std::cout << "Pool Public Key:   " << bls::Util::HexStr(pool_key.Serialize()) << std::endl;
-    std::cout << "Farmer Public Key: " << bls::Util::HexStr(farmer_key.Serialize()) << std::endl;
+    if (have_puzzle) std::cout << "Pool Puzzle Hash:  " << bls::Util::HexStr(puzzle_hash_bytes)      << std::endl;
+    else             std::cout << "Pool Public Key:   " << bls::Util::HexStr(pool_key.Serialize())   << std::endl;
+    std::cout                  << "Farmer Public Key: " << bls::Util::HexStr(farmer_key.Serialize()) << std::endl;
 
     vector<uint8_t> seed(32);
     randombytes_buf(seed.data(), seed.size());
@@ -60,11 +107,11 @@ inline phase4::output_t create_plot(
         local_sk = MPL.DeriveChildSk(local_sk, i);
     }
     const bls::G1Element local_key = local_sk.GetG1Element();
-    const bls::G1Element plot_key = local_key + farmer_key;
+    const bls::G1Element plot_key  = calc_plot_key(have_puzzle, local_key, farmer_key);
 
     phase1::input_t params;
     {
-        vector<uint8_t> bytes = pool_key.Serialize();
+        vector<uint8_t> bytes = have_puzzle ? puzzle_hash_bytes : pool_key.Serialize();
         {
             const auto plot_bytes = plot_key.Serialize();
             bytes.insert(bytes.end(), plot_bytes.begin(), plot_bytes.end());
@@ -77,8 +124,12 @@ inline phase4::output_t create_plot(
     std::cout << "Working Directory: " << tree_dir << std::endl;
     std::cout << "Plot Name: " << plot_name << std::endl;
 
-    // memo = bytes(pool_public_key) + bytes(farmer_public_key) + bytes(local_master_sk)
-    params.memo.insert(params.memo.end(), pool_key_bytes.begin(), pool_key_bytes.end());
+    // memo = bytes(pool_public_key) || puzzle_hash_bytes + bytes(farmer_public_key) + bytes(local_master_sk)
+    if (have_puzzle) {
+        params.memo.insert(params.memo.end(), puzzle_hash_bytes.begin(), puzzle_hash_bytes.end());
+    } else {
+        params.memo.insert(params.memo.end(), pool_key_bytes.begin(), pool_key_bytes.end());
+    }
     params.memo.insert(params.memo.end(), farmer_key_bytes.begin(), farmer_key_bytes.end());
     {
         const auto bytes = master_sk.Serialize();
@@ -112,13 +163,15 @@ int main(int argc, char** argv)
 
     std::string tree_dir;
     std::string pool_key_str;
+    std::string contract_addr_str;
     std::string farmer_key_str;
 
     options.add_options() \
-        ("t, tree_dir",   "Work tree directory, created by special script", cxxopts::value<std::string>(tree_dir)) \
-        ("p, pool_key",   "Pool Public Key (48 bytes)",                     cxxopts::value<std::string>(pool_key_str)) \
-        ("f, farmer_key", "Farmer Public Key (48 bytes)",                   cxxopts::value<std::string>(farmer_key_str)) \
-        ("help",          "Print help") \
+        ("t, tree_dir",      "Work tree directory, created by special script", cxxopts::value<std::string>(tree_dir)) \
+        ("p, pool_key",      "Pool Public Key (48 bytes)",                     cxxopts::value<std::string>(pool_key_str)) \
+        ("c, contract_addr", "NFT Contract Address (64 chars)",                cxxopts::value<std::string>(contract_addr_str)) \
+        ("f, farmer_key",    "Farmer Public Key (48 bytes)",                   cxxopts::value<std::string>(farmer_key_str)) \
+        ("help",             "Print help") \
     ;
 
     if (argc <= 1) {
@@ -135,8 +188,11 @@ int main(int argc, char** argv)
         std::cout << "tree_dir needs to be specified via -t path/" << std::endl;
         return -2;
     }
-    if (pool_key_str.empty()) {
+    if (not (pool_key_str.empty() xor contract_addr_str.empty())) {
+        std::cout << "--- EITHER:" << std::endl;
         std::cout << "Pool Public Key (48 bytes) needs to be specified via -p <hex>, see `chia keys show`." << std::endl;
+        std::cout << "--- OR:" << std::endl;
+        std::cout << "NFT Contract Address (64 chars) needs to be specified via -c, see `chia plotnft show`." << std::endl;
         return -2;
     }
     if (farmer_key_str.empty()) {
@@ -144,15 +200,22 @@ int main(int argc, char** argv)
         return -2;
     }
     const auto pool_key = hex_to_bytes(pool_key_str);
+    const auto puzzle_hash = bech32_address_decode(contract_addr_str);
     const auto farmer_key = hex_to_bytes(farmer_key_str);
 
     if (tree_dir.find_last_of("/") != tree_dir.size() - 1) {
         std::cout << "Invalid tree_dir: " << tree_dir << " (needs trailing '/')" << std::endl;
         return -2;
     }
-    if (pool_key.size() != bls::G1Element::SIZE) {
+    if (puzzle_hash.empty() and (pool_key.size() != bls::G1Element::SIZE)) {
         std::cout << "Invalid pool_key: " << bls::Util::HexStr(pool_key) << ", '" << pool_key_str
             << "' (needs to be " << bls::G1Element::SIZE << " bytes, see `chia keys show`)" << std::endl;
+        return -2;
+    }
+    if (not puzzle_hash.empty() and (puzzle_hash.size() != 32)) {
+        std::cout << "Invalid puzzle_hash: " << bls::Util::HexStr(puzzle_hash)
+            << ", from contract address '" << contract_addr_str
+            << "' (see `chia plotnft show`)" << std::endl;
         return -2;
     }
     if (farmer_key.size() != bls::G1Element::SIZE) {
@@ -177,7 +240,7 @@ int main(int argc, char** argv)
     #endif
     << std::endl;
 
-    create_plot(tree_dir, pool_key, farmer_key);
+    create_plot(tree_dir, pool_key, puzzle_hash, farmer_key);
 
     return 0;
 }

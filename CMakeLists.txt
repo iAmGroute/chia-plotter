@@ -17,6 +17,8 @@ message(STATUS "Architecture: ${TARGET_ARCH}")
 set(ENV{RELIC_MAIN} "1")
 add_subdirectory(lib/bls-signatures)
 
+add_subdirectory(lib/libbech32)
+
 find_package(Threads REQUIRED)
 
 if(APPLE)
@@ -32,6 +34,7 @@ include_directories(
     lib
     include
     lib/bls-signatures/src
+    lib/libbech32/include/libbech32
     ${BLAKE3_PATH}
     ${CMAKE_BINARY_DIR}/_deps/relic-src/include
     ${CMAKE_BINARY_DIR}/_deps/relic-build/include
@@ -78,7 +81,7 @@ add_library(chia_plotter STATIC
     lib/chacha8.c
 )
 
-target_link_libraries(chia_plotter blake3 fse Threads::Threads)
+target_link_libraries(chia_plotter blake3 fse bech32 Threads::Threads)
 
 add_executable(chia_plot src/chia_plot.cpp)
 
