@@ -199,20 +199,23 @@ int main(int argc, char** argv)
         std::cout << "Farmer Public Key (48 bytes) needs to be specified via -f <hex>, see `chia keys show`." << std::endl;
         return -2;
     }
-    const auto pool_key = hex_to_bytes(pool_key_str);
-    const auto puzzle_hash = bech32_address_decode(contract_addr_str);
-    const auto farmer_key = hex_to_bytes(farmer_key_str);
+
+    const bool have_puzzle = !contract_addr_str.empty();
+
+    const auto pool_key    = have_puzzle ? (std::vector<uint8_t>){} : hex_to_bytes(pool_key_str);
+    const auto puzzle_hash = have_puzzle ? bech32_address_decode(contract_addr_str) : (std::vector<uint8_t>){};
+    const auto farmer_key  = hex_to_bytes(farmer_key_str);
 
     if (tree_dir.find_last_of("/") != tree_dir.size() - 1) {
         std::cout << "Invalid tree_dir: " << tree_dir << " (needs trailing '/')" << std::endl;
         return -2;
     }
-    if (puzzle_hash.empty() and (pool_key.size() != bls::G1Element::SIZE)) {
+    if (not have_puzzle and (pool_key.size() != bls::G1Element::SIZE)) {
         std::cout << "Invalid pool_key: " << bls::Util::HexStr(pool_key) << ", '" << pool_key_str
             << "' (needs to be " << bls::G1Element::SIZE << " bytes, see `chia keys show`)" << std::endl;
         return -2;
     }
-    if (not puzzle_hash.empty() and (puzzle_hash.size() != 32)) {
+    if (have_puzzle and (puzzle_hash.size() != 32)) {
         std::cout << "Invalid puzzle_hash: " << bls::Util::HexStr(puzzle_hash)
             << ", from contract address '" << contract_addr_str
             << "' (see `chia plotnft show`)" << std::endl;
