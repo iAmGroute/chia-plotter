@@ -172,7 +172,7 @@ int main(int argc, char** argv)
     options.add_options() \
         ("t, tree_dir",      "Work tree directory, created by special script", cxxopts::value<std::string>(tree_dir)) \
         ("p, pool_key",      "Pool Public Key (48 bytes)",                     cxxopts::value<std::string>(pool_key_str)) \
-        ("c, contract_addr", "NFT Contract Address (64 chars)",                cxxopts::value<std::string>(contract_addr_str)) \
+        ("c, contract_addr", "NFT Contract Address (62 chars)",                cxxopts::value<std::string>(contract_addr_str)) \
         ("f, farmer_key",    "Farmer Public Key (48 bytes)",                   cxxopts::value<std::string>(farmer_key_str)) \
         ("help",             "Print help") \
     ;
@@ -195,7 +195,7 @@ int main(int argc, char** argv)
         std::cout << "--- EITHER:" << std::endl;
         std::cout << "Pool Public Key (48 bytes) needs to be specified via -p <hex>, see `chia keys show`." << std::endl;
         std::cout << "--- OR:" << std::endl;
-        std::cout << "NFT Contract Address (64 chars) needs to be specified via -c, see `chia plotnft show`." << std::endl;
+        std::cout << "NFT Contract Address (62 chars) needs to be specified via -c, see `chia plotnft show`." << std::endl;
         return -2;
     }
     if (farmer_key_str.empty()) {
