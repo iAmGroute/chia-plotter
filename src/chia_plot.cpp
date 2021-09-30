@@ -76,7 +76,7 @@ inline phase4::output_t create_plot(
     const auto total_begin = get_wall_time_micros();
     const bool have_puzzle = !puzzle_hash_bytes.empty();
 
-    std::cout << "Settings file: " << SETTINGS_FILE << std::endl
+    std::cout << "Settings file: " << SETTINGS_FILE << std::endl;
     std::cout << "Process ID: " << getpid() << std::endl;
     std::cout << "Number of Threads: " << G_TOTAL_THREADS << std::endl;
     std::cout << "Number of Buckets: 2^" << G_LOG_NUM_BUCKETS << " (" << (1 << G_LOG_NUM_BUCKETS) << ")" << std::endl;
