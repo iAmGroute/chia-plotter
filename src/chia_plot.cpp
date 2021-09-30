@@ -46,7 +46,7 @@ std::vector<uint8_t> bech32_address_decode(const std::string& addr) {
 }
 
 bls::G1Element calc_plot_key(
-    const bls::AugSchemeMPL& MPL, bool have_puzzle, const bls::G1Element local_key, const bls::G1Element farmer_key
+    bls::AugSchemeMPL& MPL, bool have_puzzle, const bls::G1Element local_key, const bls::G1Element farmer_key
 ) {
     if (have_puzzle) {
         vector<uint8_t> bytes = (local_key + farmer_key).Serialize();
