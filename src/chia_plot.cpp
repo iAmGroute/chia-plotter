@@ -45,7 +45,9 @@ std::vector<uint8_t> bech32_address_decode(const std::string& addr) {
     return hash;
 }
 
-bls::G1Element calc_plot_key(bool have_puzzle, const bls::G1Element local_key, const bls::G1Element farmer_key) {
+bls::G1Element calc_plot_key(
+    const bls::AugSchemeMPL& MPL, bool have_puzzle, const bls::G1Element local_key, const bls::G1Element farmer_key
+) {
     if (have_puzzle) {
         vector<uint8_t> bytes = (local_key + farmer_key).Serialize();
         {
@@ -110,7 +112,7 @@ inline phase4::output_t create_plot(
         local_sk = MPL.DeriveChildSk(local_sk, i);
     }
     const bls::G1Element local_key = local_sk.GetG1Element();
-    const bls::G1Element plot_key  = calc_plot_key(have_puzzle, local_key, farmer_key);
+    const bls::G1Element plot_key  = calc_plot_key(MPL, have_puzzle, local_key, farmer_key);
 
     phase1::input_t params;
     {
