@@ -124,7 +124,8 @@ inline phase4::output_t create_plot(
         bls::Util::Hash256(params.id.data(), bytes.data(), bytes.size());
     }
     const std::string plot_name = "plot-k32-" + get_date_string_ex("%Y-%m-%d-%H-%M")
-            + "-" + bls::Util::HexStr(params.id.data(), params.id.size());
+            + "-" + bls::Util::HexStr(params.id.data(), params.id.size())
+            + (have_puzzle ? "-nft" : "");
 
     std::cout << "Working Directory: " << tree_dir << std::endl;
     std::cout << "Plot Name: " << plot_name << std::endl;
