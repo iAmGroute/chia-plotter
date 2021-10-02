@@ -391,7 +391,6 @@ uint64_t compute_matches(
                 if (!L_bucket[0]) {
                     L_bucket[0] = std::make_shared<std::vector<T>>();
                     L_bucket[0]->reserve(avg_bucket_size * 1.2);
-                    std::cout << "p1slice " << (uint64_t)(avg_bucket_size * 1.2 * sizeof(T)) << std::endl;
                 }
                 L_bucket[0]->push_back(entry);
             }
